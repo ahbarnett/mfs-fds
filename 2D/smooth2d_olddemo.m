@@ -1,9 +1,10 @@
-function mfs_fds_hofixed2
+function smooth2d_olddemo
 % Test MFS with Ho's LSQ FDS and LU. Barnett 10/18/14
 %addpath('~/physics/shravan/lsc2d/lsc2d_release1.01/'); % for quadr
 %rmpath('/home/alex/svn/mpspack/');
+%ahb 3/25/19
 
-  curpath='FLAM';     % access FLAM
+  curpath='../../FLAM';     % access FLAM
 %  curpath = '../code/src/FLAM';
   dirs = {'compat','core','geom','hifde','hifie','ifmm','mf','misc','quad','rskel', ...
           'rskelf'};
@@ -16,17 +17,17 @@ opts = []; opts.verb = 0; occ=128; % ??
 %% lambda = 0;         changed to underdetermined setup--no more regularization
 tau = eps^(-1/3);  % params for LSQ
 
-v = 0; % verbosity
+v = 1; % verbosity
 meth = 'l';   % lin alg solve: 'd'=dense, 'h'=Ho rskel LU, 'l'=Ho rskel LSQ
 checkmv = 0;
 
-b = 1; a = .3; w = 5;         % smooth wobbly radial shape params
+b = 1; a = .3; w = 5; % try 25;        % smooth wobbly radial shape params
 R = @(t) b*(1 + a*cos(w*t));
 k = 30;            % wave #
 ti = -pi/6; ui = @(x) exp(1i*k*(cos(ti)*real(x)+sin(ti)*imag(x))); % u_inc
 x0 = -1 + 1.5i;   % scatt wave soln test pt.  Note pts are in complex notation
 
-d = 0.1; % makes A have bunch of sing vals at eps for N>400
+%d = 0.1; % makes A have bunch of sing vals at eps for N>400
 %% Ns = 200:200:1000; %400;     % 400 is converged to 1e-14
 Ns = 2.^(10:14); %% let's try something bigger
 %Ns = 50000; % 12 secs for k=30, 20 sec for k=100
@@ -36,6 +37,10 @@ for i=1:numel(Ns), N = Ns(i);
   t.t = (1:M)'/M*2*pi; t.x = exp(1i*t.t).*R(t.t); t = quadr(t); % bdry pts
   f = -ui(t.x);  % RHS
   s.t = (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t); % MFS src pts
+  
+  % scale d w/ 1/N
+  d = 100/N;
+  
   s.t = 1i*d + (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);
   if v, figure(1); plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
     axis equal; title(sprintf('N=%d, d=%g',N,d)); hold off; drawnow; end
