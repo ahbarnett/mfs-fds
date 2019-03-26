@@ -1,14 +1,7 @@
 function smooth2d_olddemo
-% Test MFS with Ho's LSQ FDS and LU. Barnett 10/18/14
-%addpath('~/physics/shravan/lsc2d/lsc2d_release1.01/'); % for quadr
-%rmpath('/home/alex/svn/mpspack/');
-%ahb 3/25/19
-
-  curpath='../../FLAM';     % access FLAM
-%  curpath = '../code/src/FLAM';
-  dirs = {'compat','core','geom','hifde','hifie','ifmm','mf','misc','quad','rskel', ...
-          'rskelf'};
-  for s = dirs, addpath(sprintf('%s/%s',curpath,s{:})); end, clear s
+% Test MFS with Ho's LSQ FDS and LU.
+% Usage: insure ../startup is run first.
+% Barnett 10/18/14, 3/25/19
 
 % setup for Ho: (from ie_circle)
 rank_or_tol = 1e-12;
@@ -16,8 +9,9 @@ p=64; theta = (1:p)*2*pi/p; proxy = 1.5*[cos(theta); sin(theta)]; clear theta
 opts = []; opts.verb = 0; occ=128; % ??
 %% lambda = 0;         changed to underdetermined setup--no more regularization
 tau = eps^(-1/3);  % params for LSQ
+%tau = 100*eps^(-1/3);  % params for LSQ. Doesn't seem to break if make too big
 
-v = 0; % verbosity
+v = 0;        % verbosity (0,1)
 meth = 'l';   % lin alg solve: 'd'=dense, 'h'=Ho rskel LU, 'l'=Ho rskel LSQ
 checkmv = 0;
 
