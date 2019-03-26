@@ -81,6 +81,8 @@ for i=1:numel(Ns), N = Ns(i);
       A = [tau*A; speye(N) sparse(N,size(A,2)-N)];
       tic, r = qr(A,0); t1 = toc; w = whos('r');
       fprintf('qr: %.3g sec / %6.2f (MB)\n',t1,w.bytes/1e6)
+      %[Q,R,P] = spqr(A,struct('Q','Householder'));
+      %x = P*(R\spqr_qmult (Q,b,0))
       % set up right-hand side
       Ms = size(A,1);
 %%      nC = Ms - M - N;  % cN needed by ls
