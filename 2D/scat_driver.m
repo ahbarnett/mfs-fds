@@ -38,7 +38,7 @@ lsqpar.tau = eps^(-1/3);  % params for LSQ
 lsqpar.qr = 'm';   % 'm'=matlab, 'q'=qr,  's'=spqr (needs SuiteSparse)
 lsqpar.refine = 1;      % 0 or 1
 
-meth = 'l';  % 'l'=dense, 'r'=FLAM rskel
+meth = 'l';  % 'l'=dense LU, 'q'=dense QR, 'r'=FLAM rskel
 F = factor(k,rx,cx,meth,flampar,lsqpar);  % direct solve, into struct fac
 rhs = -ui(t.x);     % eval uinc on bdry
 co = solve(F,rhs,meth);
