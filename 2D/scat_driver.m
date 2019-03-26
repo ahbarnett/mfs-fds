@@ -19,7 +19,7 @@ N = 1e3;
 M = round(1.2*N);         % # bdry pts
 t.t = (1:M)'/M*2*pi; t.x = exp(1i*t.t).*R(t.t);  % bdry pts
 s.t = (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);  % MFS src pts
-imagd = 100/N;     % scale dist w/ 1/N
+imagd = 0.1; %100/N;     % scale dist w/ 1/N
 s.t = 1i*imagd + (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);
 if v, figure(1); plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
   axis equal; title(sprintf('N=%d, imagd=%g',N,imagd)); hold off; drawnow; end
@@ -28,9 +28,7 @@ if v, figure(1); plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
 rx = [real(t.x(:))'; imag(t.x(:))']; cx = [real(s.x(:))'; imag(s.x(:))'];
 
 flampar.rank_or_tol = 1e-12;
-p = 64; flampar.p=p; theta = (1:p)*2*pi/p;         % proxy pts vs unit box
-flampar.proxy = 1.5*[cos(theta); sin(theta)];
-clear theta
+flampar.p=64;
 flampar.opts = []; flampar.opts.verb = 0;
 flampar.occ=128;    % max pts per box for quadtree
 

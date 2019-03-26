@@ -11,6 +11,7 @@ function X = solve(F,B,meth)
 % Outputs:
 %  X = (N-by-p) stacked solution vectors.
 
+t0=tic;
 if meth=='l'
   X = F.U\(F.L\B);   % two back-subs
 elseif meth=='q'
@@ -19,3 +20,5 @@ else
   % ***
   
 end
+fprintf('solve %.3g s\n',toc(t0))
+

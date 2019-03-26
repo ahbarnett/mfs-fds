@@ -13,7 +13,9 @@ FLAM = [h '/../FLAM'];            % user: adjust to top of FLAM installation
 run([FLAM '/startup.m']);
 
 % double # threads (hyperthreading): accels some multithreaded matlab ops!...
-maxNumCompThreads(2*maxNumCompThreads('automatic'));
+%maxNumCompThreads(2*maxNumCompThreads('automatic'));
+maxNumCompThreads('automatic');
+fprintf('MATLAB will use %d threads\n',maxNumCompThreads)
 
 set(0,'showHiddenHandles','on');        % eg lines linesmoothing
 
