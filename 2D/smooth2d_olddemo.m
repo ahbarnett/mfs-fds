@@ -17,7 +17,7 @@ opts = []; opts.verb = 0; occ=128; % ??
 %% lambda = 0;         changed to underdetermined setup--no more regularization
 tau = eps^(-1/3);  % params for LSQ
 
-v = 1; % verbosity
+v = 0; % verbosity
 meth = 'l';   % lin alg solve: 'd'=dense, 'h'=Ho rskel LU, 'l'=Ho rskel LSQ
 checkmv = 0;
 
