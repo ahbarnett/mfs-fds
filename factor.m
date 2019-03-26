@@ -17,7 +17,7 @@ function F = factor(k,rx,cx,meth,flampar,lsqpar)
 %  F = struct containing all factor info.
 
 dim = size(rx,1);
-if dim<2 || dim>3, error(sprintf('dim = %d shoud be 2 or 3!',dim)); end
+if dim<2 || dim>3, error(sprintf('dim = %d should be 2 or 3!',dim)); end
 
 if meth=='l' || meth=='q'  % ---------------- dense
   tic;
