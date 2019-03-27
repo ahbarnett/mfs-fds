@@ -48,10 +48,7 @@ else                       % ---------------- FDS
   w = whos('A'); fprintf('xsp: %.3g s \t %.0f (MB)\n',toc(t0),w.bytes/1e6)  
   N = size(cx,2);
   A = [tau*A; speye(N) sparse(N,size(A,2)-N)];  % treat as underdetermined
-  t0=tic;
-  if meth=='r'
-    [F.L,F.U,F.P,F.Q,F.D] = lu(A);
-  end
+  t0=tic; [F.L,F.U,F.P,F.Q,F.D] = lu(A);
   w = whos('F'); fprintf('factor: %.3g s \t %0.f (MB)\n',toc(t0),w.bytes/1e6)
   F.A = A;   % save it for kicks
 end

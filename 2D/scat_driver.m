@@ -28,7 +28,7 @@ if v, figure(1); plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
 rx = [real(t.x(:))'; imag(t.x(:))']; cx = [real(s.x(:))'; imag(s.x(:))'];
 
 flampar.rank_or_tol = 1e-12;
-flampar.p=64;
+flampar.p=64;  % num proxy pts (should depend on eps)
 flampar.opts = []; flampar.opts.verb = 0;
 flampar.occ=128;    % max pts per box for quadtree
 
