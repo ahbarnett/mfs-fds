@@ -41,7 +41,8 @@ F = factor(k,rx,cx,meth,flampar,lsqpar);  % direct solve, into struct fac
 rhs = -ui(t.x);     % eval uinc on bdry
 co = solve(F,rhs,meth);
 nrm = norm(co);
-rrms = norm(F.A*co - rhs)/sqrt(M);
+ur = mfseval(k,[real(t.x)';imag(t.x)'],cx,co,'d');  % A*co
+rrms = norm(ur(:) - rhs)/sqrt(M);
 %fprintf('rms err in resid = %.3g\n',rrms)
 
 u = mfseval(k,[real(x0);imag(x0)],cx,co,'d');
