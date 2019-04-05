@@ -40,18 +40,19 @@ rx = [real(t.x(:))'; imag(t.x(:))']; cx = [real(s.x(:))'; imag(s.x(:))'];
 flampar.rank_or_tol = 1e-12;
 flampar.p=64;
 flampar.opts = []; flampar.opts.verb = 0;
-flampar.occ=128;    % max pts per box for quadtree
+flampar.occ=512;    % max pts per box for quadtree (might need to tune)
 
 lsqpar.tau = eps^(-1/3);  % params for LSQ
-lsqpar.qr = 'm';   % 'm'=matlab, 'q'=qr,  's'=spqr (needs SuiteSparse)
-lsqpar.refine = 1;      % 0 or 1
+lsqpar.qr = 'q';   % 'q'=qr, 's'=spqr (needs SuiteSparse)
+lsqpar.refine = 0;      % 0 or 1
 
-meth = 'l';  % 'l'=dense LU, 'q'=dense QR, 'r'=FLAM rskel
+meth = 'r';  % 'l'=dense LU, 'q'=dense QR, 'r'=FLAM rskel
 F = factor(k,rx,cx,meth,flampar,lsqpar);  % direct solve, into struct fac
 rhs = -ui(t.x);     % eval uinc on bdry
 co = solve(F,rhs,meth);
 nrm = norm(co);
-rrms = norm(F.A*co - rhs)/sqrt(M);
+ur = mfseval(k,[real(t.x)';imag(t.x)'],cx,co,'d');  % A*co
+rrms = norm(ur(:) - rhs)/sqrt(M);
 fprintf('rms err in resid = %.3g\n',rrms)
 
 u = mfseval(k,[real(x0);imag(x0)],cx,co,'d');

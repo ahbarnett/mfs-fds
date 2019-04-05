@@ -17,9 +17,15 @@ if meth=='l'
 elseif meth=='q'
   X = F.R\(F.Q'*B);
 elseif meth=='r'
-  Ms = size(F.L,1); M = size(B,1); nC = Ms - F.N;
-  B = [B; zeros(Ms-M,size(B,2))];
-  X = F.Q*(F.U\(F.L\(F.P*(F.D\B))));
+  Ms = size(F.A,1); M = size(B,1);
+  B = [F.lsqpar.tau*B; zeros(Ms-M,size(B,2))];
+  if F.lsqpar.qr=='q'
+    X = F.R\(F.R'\(F.A'*B));  % normal eqns with iterative refinement
+    for i = 1:F.lsqpar.refine
+      X = X + F.R\(F.R'\(F.A'*(B - F.A*X)));
+    end
+  else  % 's'
+  end
   X = X(1:F.N,:);
 end
 fprintf('solve %.3g s\n',toc(t0))

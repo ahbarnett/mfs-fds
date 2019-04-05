@@ -2,7 +2,7 @@ function F = factor(k,rx,cx,meth,flampar,lsqpar)
 % FACTOR  fast factor LSQ system, for 2D or 3D PDE kernel, MFS plus rskel FDS.
 %
 % F = factor(k,rx,cx,meth,flampar,lsqpar)
-% 
+%
 % Inputs:
 %  k = wavenumber >= 0
 %  rx = d-by-M surface pts,  where dim d = 2 or 3 (determined from coords)
@@ -26,31 +26,32 @@ if meth=='l' || meth=='q'  % ---------------- dense
   if meth=='l'
     [F.L,F.U] = lu(A);
     fprintf('dense LU %.3g s\n',toc)
-  else
+  else  % 'q'
     [F.Q,F.R] = qr(A,0);      % econ
     fprintf('dense QR %.3g s\n',toc)
   end
   F.A = A;   % save it for kicks
 
 else                       % ---------------- FDS
-  occ = flampar.occ;
-  rank_or_tol = flampar.rank_or_tol;
-  p = flampar.p;
-  opts = flampar.opts;
   Afun = @(i,j)Kfun(rx(:,i),cx(:,j),k);
-  pxypts = proxypts(dim,p);  % proxy pts vs unit box
+  pxypts = proxypts(dim,flampar.p);  % proxy pts vs unit box
   pxyfun = @(rc,rx,cx,slf,nbr,l,ctr)proxyfun(rc,rx,cx,slf,nbr,l,ctr,pxypts,k);
-  t0=tic; F = rskel(Afun,rx,cx,occ,rank_or_tol,pxyfun,opts);  % compress
-  w = whos('F'); fprintf('rskel: %.3g s \t %.0f (MB)\n',toc(t0),w.bytes/1e6)
+  t0=tic; RF = rskel(Afun,rx,cx,flampar.occ,flampar.rank_or_tol,pxyfun,flampar.opts);  % compress
+  w = whos('RF'); fprintf('rskel: %.3g s \t %.0f (MB)\n',toc(t0),w.bytes/1e6)
 
-  tau = lsqpar.tau;
-  t0=tic; A = rskel_xsp(F);  % make a big sparse mat
-  w = whos('A'); fprintf('xsp: %.3g s \t %.0f (MB)\n',toc(t0),w.bytes/1e6)  
+  t0=tic; A = rskel_xsp(RF);  % make a big sparse mat
+  w = whos('A'); fprintf('xsp: %.3g s \t %.0f (MB)\n',toc(t0),w.bytes/1e6)
   N = size(cx,2);
-  A = [tau*A; speye(N) sparse(N,size(A,2)-N)];  % treat as underdetermined
-  t0=tic; [F.L,F.U,F.P,F.Q,F.D] = lu(A);
+  A = [lsqpar.tau*A; speye(N) sparse(N,size(A,2)-N)];  % treat as underdetermined
+  t0=tic;
+  if lsqpar.qr=='q'
+    F.R = qr(A,0);
+    F.A = A;
+  else  % 's'
+  end
   w = whos('F'); fprintf('factor: %.3g s \t %0.f (MB)\n',toc(t0),w.bytes/1e6)
-  F.A = A;   % save it for kicks
+  F.lsqpar = lsqpar;  % store for solve
+  F.N = N;
 end
 end  % main
 
