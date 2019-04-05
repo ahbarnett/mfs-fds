@@ -20,11 +20,13 @@ elseif meth=='r'
   Ms = size(F.A,1); M = size(B,1);
   B = [F.lsqpar.tau*B; zeros(Ms-M,size(B,2))];
   if F.lsqpar.qr=='q'
-    X = F.R\(F.R'\(F.A'*B));  % normal eqns with iterative refinement
-    for i = 1:F.lsqpar.refine
-      X = X + F.R\(F.R'\(F.A'*(B - F.A*X)));
-    end
+    solvefn = @(b)(F.R\(F.R'\(F.A'*b)));
   else  % 's'
+    solvefn = @(b)(F.P*(F.R\spqr_qmult(F.Q,b,0)));
+  end
+  X = solvefn(B);
+  for i = 1:F.lsqpar.refine  % iterative refinement
+    X = X + solvefn(B - F.A*X);
   end
   X = X(1:F.N,:);
 end

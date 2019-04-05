@@ -46,12 +46,14 @@ else                       % ---------------- FDS
   t0=tic;
   if lsqpar.qr=='q'
     F.R = qr(A,0);
-    F.A = A;
   else  % 's'
+    opts = struct('Q','Householder');
+    [F.Q,F.R,F.P] = spqr(A,opts);
   end
   w = whos('F'); fprintf('factor: %.3g s \t %0.f (MB)\n',toc(t0),w.bytes/1e6)
   F.lsqpar = lsqpar;  % store for solve
   F.N = N;
+  F.A = A;
 end
 end  % main
 
