@@ -13,6 +13,9 @@ function F = factor(k,rx,cx,meth,flampar,lsqpar)
 %  flampar = FLAM parameter struct
 %  lsqpar = LSQ parameter struct
 %
+% Note: normalization for MFS representation differs from fundamental solution:
+%   H_0^{(1)}(kr) in 2D,  e(ikr)/r in 3D.
+%
 % Output:
 %  F = struct containing all factor info.
 
@@ -57,7 +60,7 @@ else                       % ---------------- FDS
 end
 end  % main
 
-% kernel function
+% kernel function (see doc note about normalization)
 function K = Kfun(rx,cx,k)
   if size(rx,1)==2
     r = sqrt((rx(1,:)'-cx(1,:)).^2 + (rx(2,:)'-cx(2,:)).^2);
@@ -73,14 +76,15 @@ function pts = proxypts(dim,p)
   if dim==2
     theta = (1:p)*2*pi/p;
     pts = 1.5*[cos(theta); sin(theta)];
-  else
-    error('not yet supported')
+  else         % 3D
+    error('3d proxypts not yet supported')
   end
 end
 
-% proxy function for FDS
 function [Kpxy,nbr] = proxyfun(rc,rx,cx,slf,nbr,l,ctr,pxypts,k)
-  pts = pxypts*l + ctr';
+% proxy function for FDS: outputs kernel matrix from pts <-> proxies
+% for either row or col points, and outputs boolean for which pts to keep.
+pts = pxypts*l + ctr';       % scale and center the proxy circle about the box
   if strcmpi(rc,'r')
     Kpxy = Kfun(rx(:,slf),pts,k);
     dx = cx(1,nbr) - ctr(1);

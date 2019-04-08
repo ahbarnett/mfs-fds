@@ -4,21 +4,27 @@ function U = mfseval(k,trg,cx,x,meth,opts)
 % U = eval(k,trg,cx,x,meth)
 %  evaluates potential u at m targets trg (d-by-m, where space dimension d
 %  inferred from trg), using coeff vector x in
-%  the Helmholtz MFS with wavenumber k>=0 and source points cx (d-by-N).
+%  the Helmholtz MFS with wavenumber k>=0, and source points cx (d-by-N).
 %  Returns a row vector.
+%
+% Note: normalization for sources differs from math fundamental solution:
+%   H_0^{(1)}(kr) in 2D,  e(ikr)/r in 3D.
+%
 % meth = 'd': direct summation
 %        'f': fast (FMM) summation
 % opts.iprec controls FMM accuracy
+%
+% Just values (no derivatives yet).
 
 if nargin<6, opts = []; end
-if ~isfield(opts,'iprec'), opts.iprec=4; end
 
 dim = size(trg,1);
 if dim<2 || dim>3, error(sprintf('dim = %d should be 2 or 3!',dim)); end
 if size(cx,1)~=dim, error('cx and trg dimensions incompatible!'); end
-M = size(trg,2);
-N = size(cx,2);
+M = size(trg,2);      % num targs
+N = size(cx,2);       % num sources
 
+% Note: in following, normalization must match the kernels in factor.m ...
 if meth=='d'
   U = zeros(1,M);
   if dim==2
@@ -34,6 +40,15 @@ if meth=='d'
   end
   
 elseif meth=='f'
-  % ***
-  
+  if ~isfield(opts,'iprec'), opts.iprec=4; end   % 12 digits by default
+  if dim==2
+    ifcharge = 1;
+    ifdipole = 0;   % note dummy inputs for dipoles here...
+    iffldtarg = 0;  % for now
+    U = hfmm2dpart(opts.iprec,k,N,cx,ifcharge,x,ifdipole,...
+                   0*x,0*cx,0,0,0,M,trg,1,iffldtarg,0);
+    U = (4/1i) * U.pottarg;   % undo the hfmm2d normalization. is a row vec
+  else              % 3D
+    % ***
+  end
 end
