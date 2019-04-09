@@ -4,9 +4,9 @@ MFS via FDS.
 
 authors: Alex Barnett, Ken Ho, and Yuxiang (Larry) Liu.
 
-### Usage
+## Usage
 
-Dependencies:
+### Dependencies:
 
 * MATLAB, any recent version.
 * [FLAM](https://github.com/klho/FLAM)
@@ -19,7 +19,7 @@ directory,
 there is no adjustment to do.  Otherwise adjust the location of your
 distributions in the file `startup.m`.
 
-Example:
+### Example:
 
 Open MATLAB from the `mfs-fds` directory
 
@@ -31,7 +31,9 @@ type `scat_driver`, which will run a small example for a couple of
 seconds, print some (hopefully small) solution error value, and
 produce a 2D scattering plot.
 
+## Contents
 
-
+* `2D/scat_driver` : small smooth scattering example in 2D
+* `2D/scat_panel_corner_dr` : small corner scattering example in 2D
 
 

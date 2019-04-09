@@ -30,7 +30,7 @@ if v, figure(1); clf; plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
 rx = [real(t.x(:))'; imag(t.x(:))']; cx = [real(s.x(:))'; imag(s.x(:))'];
 
 % linear solver choice...
-meth = 'r';  % 'l'=dense LU, 'q'=dense QR, 'r'=FLAM rskel
+meth = 'r';  % 'l'=dense LU, 'q'=dense QR (both O(N^3)); 'r'=FLAM rskel
 
 flampar.rank_or_tol = 1e-12;
 flampar.p=64;  % num proxy pts (should depend on eps)
