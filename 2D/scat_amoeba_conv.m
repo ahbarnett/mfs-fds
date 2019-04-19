@@ -6,10 +6,10 @@
 %      at =30,  ~8 digits.
 %      at k=1 or 10, limit at 8-9 digits
 %      at k=300 need flampar.p >= 200 for 1e-6 and >=300 for 1e-7, then stops.
-%   To check this loss is only due to FLAM, select meth='q' below & you'll
-%      see 11 digits rms at N=6e3 (& solution at pt conv to 13 digits).
+%   To check this loss is only due to FLAM, select meth='l' below & you'll
+%      see 13 digits rms at N=6e3 (& solution at pt conv to 14 digits).
 
-clear; v = 1;        % verbosity: 0 = text only, 1 = figs, 2 = movie only
+clear; v = 1;        % verbosity: 0 = text only, 1 = figs
 
 % smooth amoeba radial shape params...
 rng(0);     % freeze the randomness
@@ -59,7 +59,7 @@ for j = 1:numel(Ns);    % ---------------------------------- N-convergence
   t.t = (1:M)'/M*2*pi; t.x = exp(1i*t.t).*R(t.t);  % bdry pts
   s.t = (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);  % MFS src pts
   s.t = 1i*imagd + (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);
-  if v==1
+  if v==1 && j=1
     figure(1); clf; plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
     axis equal; title(sprintf('N=%d, imagd=%g',N,imagd)); hold off; drawnow;
   end
