@@ -33,7 +33,9 @@ produce a 2D scattering plot.
 
 ## Contents
 
-* `2D/scat_driver` : small smooth scattering example in 2D
-* `2D/scat_panel_corner_dr` : small corner scattering example in 2D
+* `2D/scat_driver` : small smooth scattering example  
+* `2D/scat_amoeba_conv` : medium smooth scattering convergence tests  
+* `2D/scat_amoeba_conv_nF100_k100' : medium-large smooth scattering + movie  
+* `2D/scat_panel_corner_dr` : small corner scattering example  
 
 

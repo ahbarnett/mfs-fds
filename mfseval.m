@@ -8,11 +8,13 @@ function U = mfseval(k,trg,cx,x,meth,opts)
 %  Returns a row vector.
 %
 % Note: normalization for sources differs from math fundamental solution:
-%   H_0^{(1)}(kr) in 2D,  e(ikr)/r in 3D.
+%  H_0^{(1)}(kr) in 2D,  e(ikr)/r in 3D.
 %
 % meth = 'd': direct summation
 %        'f': fast (FMM) summation
-% opts.iprec controls FMM accuracy
+%
+% U = eval(k,trg,cx,x,meth,opts) also controls options such as...
+%  opts.iprec controls FMM accuracy
 %
 % Just values (no derivatives yet).
 
