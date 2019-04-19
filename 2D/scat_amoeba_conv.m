@@ -6,6 +6,8 @@
 %      at =30,  ~8 digits.
 %      at k=1 or 10, limit at 8-9 digits
 %      at k=300 need flampar.p >= 200 for 1e-6 and >=300 for 1e-7, then stops.
+%   To check this loss is only due to FLAM, select meth='q' below & you'll
+%      see 11 digits rms at N=6e3 (& solution at pt conv to 13 digits).
 
 clear; v = 1;        % verbosity: 0 = text only, 1 = figs, 2 = movie only
 
@@ -14,7 +16,7 @@ rng(0);     % freeze the randomness
 expt = 1;
 switch expt
  case 1    %  small-scale
-  k = 30; flampar.p = 64;   % wavenumber, num proxy pts (should dep on eps, k)
+  k = 30; flampar.p = 96; % wavenumber; 64 num proxy pts (should dep on eps, k)
   %k = 100; flampar.p = 100;   % wavenumber
   %k = 300; flampar.p = 300; Ns = [1e4 1.5e4 2e4];   % wavenumber
   nF = 20;        % # shape Fourier modes
@@ -37,7 +39,7 @@ x0 = -1 + 1.5i;   % scatt wave soln test pt.  Note pts are in complex notation
 
 evalmeth = 'f';   % summation method for pot eval: 'd' direct slow, 'f' FMM.
 
-% linear solver choice...
+% linear solver choice... (try 'l' to compare FLAM loss of digits)
 meth = 'r';  % 'l'=dense LU, 'q'=dense QR (both O(N^3)); 'r'=FLAM rskel
 
 flampar.rank_or_tol = 1e-12;    % 1e-15 is 5x slower than 1e-12
@@ -66,7 +68,7 @@ for j = 1:numel(Ns);    % ---------------------------------- N-convergence
   rx = [real(t.x(:))'; imag(t.x(:))']; cx = [real(s.x(:))'; imag(s.x(:))'];
   
   F = factor(k,rx,cx,meth,flampar,lsqpar);  % direct solve, into struct fac
-  if meth~='r', fprintf('eps-rank of A : %d\n',rank(F.A,1e-14*normest(F.A))), end
+  if meth~='r' && N<2e3, fprintf('eps-rank of A : %d\n',rank(F.A,1e-14*normest(F.A))), end
   rhs = -ui(t.x);     % eval uinc on bdry
   co = solve(F,rhs,meth);
   nrm = norm(co);

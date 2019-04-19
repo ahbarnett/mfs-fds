@@ -7,27 +7,28 @@ function F = factor(k,rx,cx,meth,flampar,lsqpar)
 %  k = wavenumber >= 0
 %  rx = d-by-M surface pts,  where dim d = 2 or 3 (determined from coords)
 %  cx = d-by-N source (MFS) pts
-%  meth = 'l' dense direct LU
-%         'q' dense direct QR
-%         'r' FLAM rskel, augmented by I.
-%  flampar = FLAM parameter struct
-%  lsqpar = LSQ parameter struct
+%  meth = factorization method string, should match that in solve.m :
+%         'l' dense direct LU,   O(N^3)
+%         'q' dense direct QR,   O(N^3) and slower than LU, but more stable?
+%         'r' FLAM rskel, augmented by I.    O(N) unless space-filling.
+%  flampar = FLAM parameter struct (only used if meth='r')
+%  lsqpar = LSQ parameter struct (ditto)
 %
 % Note: normalization for MFS representation differs from fundamental solution:
 %   H_0^{(1)}(kr) in 2D,  e(ikr)/r in 3D.
 %
 % Output:
-%  F = struct containing all factor info.
+%  F = struct containing all factor info, and lsq params if needed
 
 dim = size(rx,1);
 if dim<2 || dim>3, error(sprintf('dim = %d should be 2 or 3!',dim)); end
 
-if meth=='l' || meth=='q'  % ---------------- dense
+if meth=='l' || meth=='q'  % ---------------- dense meths
   tic; A = Kfun(rx,cx,k);
   w = whos('A'); fprintf('A fill %.3g s \t (%.0f MB)\n',toc,w.bytes/1e6)
   tic;
   if meth=='l'
-    [F.L,F.U] = lu(A);
+    [F.L,F.U,F.P] = lu(A,'matrix');     % F.P is the perm, as a matrix
     fprintf('dense LU %.3g s\n',toc)
   else  % 'q'
     [F.Q,F.R] = qr(A,0);      % econ
@@ -56,9 +57,12 @@ else                       % ---------------- FDS
   w = whos('F'); fprintf('factor: %.3g s \t %0.f (MB)\n',toc(t0),w.bytes/1e6)
   F.lsqpar = lsqpar;  % store for solve
   F.N = N;
-  F.A = A;
+  F.A = A;            % the sparse mat, needed for normal eqns & iter refine.
 end
 end  % main
+
+
+% ------------- helper routines for matrix elements in FLAM --------
 
 % kernel function (see doc note about normalization)
 function K = Kfun(rx,cx,k)
