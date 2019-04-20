@@ -1,0 +1,29 @@
+
+ESRI shapefile ------------------------------------------------
+
+needs 3 file suffices together: .shx .shp .dbf
+
+read to matlab:
+https://www.eoas.ubc.ca/~rich/map.html
+m_shaperead.m
+returns struct with field ncst = N-by-2 coords in lat & longi.
+
+b = load('~/matlab/m_map/private/m_coasts');
+figure; plot(b.ncst(:,1),b.ncst(:,2),'.-');    % shows as lat, longi
+
+
+
+SVG ------------------------------
+
+Zorin suggests
+
+not CAD standard, but becoming web std
+
+MatlabSVG pkg did poor job reading koch.svg
+
+importsvg.m also
+
+
+DWX --------------
+
+used in CAD.

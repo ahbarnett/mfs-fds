@@ -29,13 +29,13 @@ type `cd 2D`
 
 type `scat_driver`, which will run a small example for a couple of
 seconds, print some (hopefully small) solution error value, and
-produce a 2D scattering plot.
+produce a 2D wave scattering plot.
 
 ## Contents
 
-* `2D/scat_driver` : small smooth scattering example  
-* `2D/scat_amoeba_conv` : medium smooth scattering convergence tests  
-* `2D/scat_amoeba_conv_nF100_k100' : medium-large smooth scattering + movie  
-* `2D/scat_panel_corner_dr` : small corner scattering example  
+* `2D/scat_driver` : small smooth Dirichet scattering example  
+* `2D/scat_amoeba_conv` : medium smooth Dirichlet scattering convergence tests  
+* `2D/scat_amoeba_conv_nF100_k100' : medium-large Dirichlet smooth scattering + movie  
+* `2D/scat_panel_corner_dr` : small corner Dirichlet scattering example  
 
 
