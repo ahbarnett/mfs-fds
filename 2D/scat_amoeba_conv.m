@@ -59,7 +59,7 @@ for j = 1:numel(Ns);    % ---------------------------------- N-convergence
   t.t = (1:M)'/M*2*pi; t.x = exp(1i*t.t).*R(t.t);  % bdry pts
   s.t = (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);  % MFS src pts
   s.t = 1i*imagd + (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);
-  if v==1 && j=1
+  if v==1 && j==1
     figure(1); clf; plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
     axis equal; title(sprintf('N=%d, imagd=%g',N,imagd)); hold off; drawnow;
   end
