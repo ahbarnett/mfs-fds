@@ -74,7 +74,7 @@ for j = 1:numel(Ns);    % ---------------------------------- N-convergence
   nrm = norm(co);
   ur = mfseval(k,[real(t.x)';imag(t.x)'],cx,co,evalmeth);  % apply A to co
   rrms = norm(ur(:) - rhs)/sqrt(M);     % resid RMS
-  %(sim to rel resid, since rhs has elements of size 1)
+  % (sim to rel resid, since rhs has elements of size 1)
 
   us(j) = mfseval(k,[real(x0);imag(x0)],cx,co,'d');  % 1 targ: always use direct
 

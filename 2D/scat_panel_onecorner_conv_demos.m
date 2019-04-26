@@ -2,14 +2,13 @@
 % and panel discr, using MFS and FLAM FDS, with convergence & accurate answers.
 % Barnett 3/26/19; "exact" values to compare far-field 4/22/19, 5 domains.
 
-clear;
 v = 1;        % verbosity: 0 = text only, 1 = total potential plot
 
 k = 15;    % wavenumber (uex for k=15 and the below x0 & uinc)
 
 o.reldist = -0.5; o.meth = 'c';    % default MFS interior source loc algorithm
 
-dom='8';    % choose one of 5 domain types...
+if ~exist('dom','var'), dom='2'; end      % choose one of 5 domain types...
 if dom=='s'  % set up Z, Z', Z'' parametrization of chosen domain in [-pi,pi]..
   a = 0.3; w = 3; b = 0.5; t.Z = @(t) (1+a*cos(w*t+b)).*exp(1i*t); % trefoil
   Nb = 26; Nr=0;   %  # base panels (Np= # panels), # levels of r-adic ref
