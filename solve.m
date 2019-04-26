@@ -29,8 +29,8 @@ elseif meth=='r'
   end
   Ms = size(F.A,1); nc = Ms - F.N; [M,p] = size(B);
   B = [B; zeros(nc-M,p)];
-  tol = 1;  % disable convergence check
-  X = lsedc(lsfun,F.A(nc+1:end,:),zeros(F.N,p),F.A(1:nc,:)/F.lsqpar.tau,B,F.lsqpar.tau,tol,F.lsqpar.refine);
+  warning('off','FLAM:lsedc:maxIterCount')  % disable max iter warning
+  X = lsedc(lsfun,F.A(nc+1:end,:),zeros(F.N,p),F.A(1:nc,:)/F.lsqpar.tau,B,F.lsqpar.tau,0,F.lsqpar.refine);
   X = X(1:F.N,:);
 end
 fprintf('solve %.3g s\n',toc(t0))
