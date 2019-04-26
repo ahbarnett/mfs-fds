@@ -25,7 +25,7 @@ if dim<2 || dim>3, error(sprintf('dim = %d should be 2 or 3!',dim)); end
 
 if meth=='l' || meth=='q'  % ---------------- dense meths
   tic; A = Kfun(rx,cx,k);
-  w = whos('A'); fprintf('A fill %.3g s \t (%.0f MB)\n',toc,w.bytes/1e6)
+  w = whos('A'); fprintf('A (%dx%d) fill %.3g s \t (%.0f MB)\n',size(rx,2),size(cx,2),toc,w.bytes/1e6)
   tic;
   if meth=='l'
     [F.L,F.U,F.P] = lu(A,'matrix');     % F.P is the perm, as a matrix

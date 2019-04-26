@@ -1,9 +1,9 @@
-function [s ts pans] = panelquadr(s,p,Nb,Nr,r,egap,opts)
-% PANELQUADR - set up toy 2D panel quadratures for smooth curve or one corner
+function [s ts pans] = panelquadr_1corn(s,p,Nb,Nr,r,egap,opts)
+% PANELQUADR_1CORN - toy 2D panel quadratures for smooth curve or one corner
 %
-% s = panelquadr(s,p,Nb) fills struct s with quadrature nodes (in complex
+% s = panelquadr_1corn(s,p,Nb) fills struct s with quadrature nodes (in complex
 %  plane) and other geometric info.
-% [s ts pan0 pan1] = panelquadr(s,p,Nb) also outputs:
+% [s ts pans] = panelquadr_1corn(s,p,Nb) also outputs:
 %   ts: parameters values of panel breakpts.
 %   pans: 2-by-Np complex coords of panel starts and ends
 %
@@ -12,13 +12,13 @@ function [s ts pans] = panelquadr(s,p,Nb,Nr,r,egap,opts)
 % p = nodes per panel
 % Nb = number of "base" panels before refinement
 %
-% s = panelquadr(s,p,Nb,Nr,r,egap) does refinement about parameter t=0 only:
+% s = panelquadr_1corn(s,p,Nb,Nr,r,egap) refines about parameter t=0 only:
 % Nr = # refinement levels (=0 no refinement)
 % r = geometric refinement factor (2=dyadic; but 3-5 is more efficient!)
 % egap : 0=no gap, 1=2eps-sized gap in r-adic refinement
 % If any inputs are absent or empty, default values are used.
 %
-% s = panelquadr(s,p,Nb,Nr,r,egap,opts) controls options such as:
+% s = panelquadr_1corn(s,p,Nb,Nr,r,egap,opts) controls options such as:
 %   opts.qtype = 'g' (Gauss-Legendre, default) vs 'u' (uniform)
 %
 % Barnett 10/30/14, simplified 3/26/19
