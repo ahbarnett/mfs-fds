@@ -22,18 +22,20 @@ if meth=='l'
 elseif meth=='q'
   X = F.R\(F.Q'*B);  % one mult and one back-sub, slower than LU
 elseif meth=='r'
-  Ms = size(F.A,1); M = size(B,1);
-  B = [F.lsqpar.tau*B; zeros(Ms-M,size(B,2))];
   if F.lsqpar.qr=='q'
-    solvefn = @(b)(F.R\(F.R'\(F.A'*b)));
+    lsfun = @(b)(normal_eqn_ls(F,b));
   else  % 's'
-    solvefn = @(b)(F.P*(F.R\spqr_qmult(F.Q,b,0)));
+    lsfun = @(b)(F.P*(F.R\spqr_qmult(F.Q,b,0)));
   end
-  X = solvefn(B);
-  for i = 1:F.lsqpar.refine  % iterative refinement
-    X = X + solvefn(B - F.A*X);
-  end
+  Ms = size(F.A,1); nc = Ms - F.N; [M,p] = size(B);
+  B = [B; zeros(nc-M,p)];
+  tol = 1;  % disable convergence check
+  X = lsedc(lsfun,F.A(nc+1:end,:),zeros(F.N,p),F.A(1:nc,:)/F.lsqpar.tau,B,F.lsqpar.tau,tol,F.lsqpar.refine);
   X = X(1:F.N,:);
 end
 fprintf('solve %.3g s\n',toc(t0))
+
+function x = normal_eqn_ls(F,b)
+x = F.R\(F.R'\(F.A'*b));
+x = x + F.R\(F.R'\(F.A'*(b - F.A*x)));  % one step of iterative refinement for digit loss from normal equations
 
