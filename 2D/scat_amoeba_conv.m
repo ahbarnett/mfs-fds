@@ -16,7 +16,7 @@ rng(0);     % freeze the randomness
 expt = 1;
 switch expt
  case 1    %  small-scale
-  k = 30; flampar.p = 96; % wavenumber; 64 num proxy pts (should dep on eps, k)
+  k = 30; flampar.p = 64; % wavenumber; 64 num proxy pts (should dep on eps, k)
   %k = 100; flampar.p = 100;   % wavenumber
   %k = 300; flampar.p = 300; Ns = [1e4 1.5e4 2e4];   % wavenumber
   nF = 20;        % # shape Fourier modes
@@ -27,7 +27,7 @@ switch expt
   k = 100;    % wavenumber
   nF = 200;
   amax = 0.05; atail = 0.5;
-  imagd = 0.0005;    % crucial src dist param:  fixed or scale w/ nF or N 
+  imagd = 0.0005;    % crucial src dist param:  fixed or scale w/ nF or N
   Ns = [3e4 4e4 5e4];   % convergence study
 end
 aj = randn(1,nF); bj = randn(1,nF);  % # Fourier modes
@@ -48,7 +48,7 @@ flampar.occ=300; %128;    % max pts per box for quadtree (affects speed only)
 
 lsqpar.tau = eps^(-1/3);  % params for LSQ
 lsqpar.qr = 'q';   % 'q'=qr, 's'=spqr (needs SuiteSparse)
-lsqpar.refine = 0;      % 0 or 1
+lsqpar.refine = 1;      % 0 or 1
 
 us = nan*Ns;
 for j = 1:numel(Ns);    % ---------------------------------- N-convergence
@@ -59,14 +59,14 @@ for j = 1:numel(Ns);    % ---------------------------------- N-convergence
   t.t = (1:M)'/M*2*pi; t.x = exp(1i*t.t).*R(t.t);  % bdry pts
   s.t = (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);  % MFS src pts
   s.t = 1i*imagd + (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);
-  if v==1 && j=1
+  if v==1 && j==1
     figure(1); clf; plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
     axis equal; title(sprintf('N=%d, imagd=%g',N,imagd)); hold off; drawnow;
   end
 
   % convert to real coords: rx = surface pts (rows), cx = source pts (cols)...
   rx = [real(t.x(:))'; imag(t.x(:))']; cx = [real(s.x(:))'; imag(s.x(:))'];
-  
+
   F = factor(k,rx,cx,meth,flampar,lsqpar);  % direct solve, into struct fac
   if meth~='r' && N<2e3, fprintf('eps-rank of A : %d\n',rank(F.A,1e-14*normest(F.A))), end
   rhs = -ui(t.x);     % eval uinc on bdry
