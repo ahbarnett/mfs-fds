@@ -9,6 +9,8 @@
 %   To check this loss is only due to FLAM, select meth='l' below & you'll
 %      see 13 digits rms at N=6e3 (& solution at pt conv to 14 digits).
 
+% proxy p scaling with k: k<=30 p=64; k=100 p=96; k=300
+
 clear; v = 1;        % verbosity: 0 = text only, 1 = figs
 
 % smooth amoeba radial shape params...
@@ -24,7 +26,8 @@ switch expt
   imagd = 0.004;     % MFS src dist, good for nF=20
   Ns = [2e3 3e3 4e3 6e3 8e3 1e4];   % convergence- bottoms at 1e-7
  case 2         % medium big (30 s solve)
-  k = 100;    % wavenumber
+  k = 100; flampar.p = 96;    % wavenumber; (p=128 no diff from p=96)
+  %k = 30; flampar.p = 64; % wavenumber; 64 num proxy pts (should dep on eps, k)
   nF = 200;
   amax = 0.05; atail = 0.5;
   imagd = 0.0005;    % crucial src dist param:  fixed or scale w/ nF or N
@@ -48,17 +51,18 @@ flampar.occ=300; %128;    % max pts per box for quadtree (affects speed only)
 
 lsqpar.tau = eps^(-1/3);  % params for LSQ
 lsqpar.qr = 'q';   % 'q'=qr, 's'=spqr (needs SuiteSparse)
-lsqpar.refine = 1;      % 0 or 1
+lsqpar.refine = 1;      % 0 or 1 (latter goes beyond sqrt(emach))
 
 us = nan*Ns;
 for j = 1:numel(Ns);    % ---------------------------------- N-convergence
-  N = Ns(j); fprintf('\nsolving N=%d...\n',N)
+  N = Ns(j); fprintf('\nsolving N=%d... ',N)
 
   % MFS: t = surface pt struct, s = source pt struct
   M = round(1.2*N);         % # bdry pts
   t.t = (1:M)'/M*2*pi; t.x = exp(1i*t.t).*R(t.t);  % bdry pts
   s.t = (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);  % MFS src pts
   s.t = 1i*imagd + (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);
+  fprintf(' (min src ppw = %.3g; bdry ppw = %.3g)\n',2*pi/(k*max(abs(diff(s.x)))),2*pi/(k*max(abs(diff(t.x)))))
   if v==1 && j==1
     figure(1); clf; plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
     axis equal; title(sprintf('N=%d, imagd=%g',N,imagd)); hold off; drawnow;

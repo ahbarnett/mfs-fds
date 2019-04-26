@@ -23,6 +23,7 @@ t.t = (1:M)'/M*2*pi; t.x = exp(1i*t.t).*R(t.t);  % bdry pts
 s.t = (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);  % MFS src pts
 imagd = 0.1;                   % Note for imagd=0.1 in this BVP, rank(A)<600
 s.t = 1i*imagd + (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);
+fprintf('min src ppw = %.3g; bdry ppw = %.3g\n',2*pi/(k*max(abs(diff(s.x)))),2*pi/(k*max(abs(diff(t.x)))))
 if v, figure(1); clf; plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
   axis equal; title(sprintf('N=%d, imagd=%g',N,imagd)); hold off; drawnow; end
 

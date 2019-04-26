@@ -1,6 +1,7 @@
 % driver for 2D Helmholtz exterior scattering from domains w/ 0 or 1 corners,
 % and panel discr, using MFS and FLAM FDS, with convergence & accurate answers.
 % Barnett 3/26/19; "exact" values to compare far-field 4/22/19, 5 domains.
+% Note dom is treated as incoming variable to allow shape change 4/26/19.
 
 v = 1;        % verbosity: 0 = text only, 1 = total potential plot
 
@@ -63,7 +64,8 @@ for i=1:numel(Nbs),  Nb=Nbs(i); Nr=Nrs(i); % ----------------- conv loop ----
   M = numel(t.x); Np = numel(tpan);
 
   s = panelcurvemfs(pmfs,t,tpan,o); N = numel(s.x);  % MFS src pts (s = struct)
-  
+  fprintf('N=%d...  (min src ppw = %.3g; bdry ppw = %.3g)\n',N,2*pi/(k*max(abs(diff(s.x)))),2*pi/(k*max(abs(diff(t.x)))))
+
   if v, figure(1); clf; plot(t.x, 'b.-'); hold on; plot(s.x, 'r.');
     plot(x0,'+'); axis equal; title(sprintf('N=%d',N)); hold off; drawnow;
   end
@@ -81,7 +83,7 @@ for i=1:numel(Nbs),  Nb=Nbs(i); Nr=Nrs(i); % ----------------- conv loop ----
 
   lsqpar.tau = eps^(-1/3);  % params for LSQ
   lsqpar.qr = 'q';   % 'q'=qr, 's'=spqr (needs SuiteSparse)
-  lsqpar.refine = 0;      % 0 or 1
+  lsqpar.refine = 1;      % 0 or 1 (latter better acc)
 
   F = factor(k,rx,cx,meth,flampar,lsqpar);  % direct solve, into struct fac
   rhs = -ui(t.x);     % eval uinc on bdry
