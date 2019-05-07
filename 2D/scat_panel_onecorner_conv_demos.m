@@ -81,7 +81,7 @@ for i=1:numel(Nbs),  Nb=Nbs(i); Nr=Nrs(i); % ----------------- conv loop ----
   flampar.opts = []; flampar.opts.verb = 0;
   flampar.occ=512;    % max pts per box for quadtree (might need to tune)
 
-  lsqpar.tau = eps^(-1/3);  % params for LSQ
+  lsqpar.tau = 1e6; %eps^(-1/3);  % params for LSQ  (>=1e7 causes NaNs as N gro)
   lsqpar.qr = 'q';   % 'q'=qr, 's'=spqr (needs SuiteSparse)
   lsqpar.refine = 1;      % 0 or 1 (latter better acc)
 

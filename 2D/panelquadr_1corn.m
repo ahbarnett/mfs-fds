@@ -4,7 +4,7 @@ function [s ts pans] = panelquadr_1corn(s,p,Nb,Nr,r,egap,opts)
 % s = panelquadr_1corn(s,p,Nb) fills struct s with quadrature nodes (in complex
 %  plane) and other geometric info.
 % [s ts pans] = panelquadr_1corn(s,p,Nb) also outputs:
-%   ts: parameters values of panel breakpts.
+%   ts: parameter values of start of each panel
 %   pans: 2-by-Np complex coords of panel starts and ends
 %
 % Inputs:
@@ -27,8 +27,8 @@ if nargin<2 || isempty('p'), p=16; end
 if nargin<3 || isempty('Nb'), Nb=20; end
 if nargin<4 || isempty('Nr'), Nr=0; end
 if nargin<5 || isempty('r'), r=3; end
-if nargin<5 || isempty('egap'), egap=0; end
-if nargin<6, opts=[]; end
+if nargin<6 || isempty('egap'), egap=0; end
+if nargin<7, opts=[]; end
 if ~isfield(opts,'qtype'), opts.qtype='g'; end
 
 if Nr>0, meth='d'; else meth='n'; end   % whether to refine
@@ -63,7 +63,7 @@ if isfield(s,'Zp')
     kap = -real(conj(nx).*s.Zpp(t))./sp.^3;
     s.cur = kap(:);
   end
-  nx = nx./sp;   % x bdry pts, xn normals, sp speed, kap curvature
+  nx = nx./sp;   % x bdry pts, nx normals, sp speed, kap curvature
   s.w = sp(:).*w(:); s.nx = nx(:); 
 end
 % load into seg struct

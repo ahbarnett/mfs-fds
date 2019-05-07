@@ -29,8 +29,8 @@ Np = numel(tpan);   % # panels
 tpan = tpan(:).';   % make row vec
 
 mfspans = nan(2,Np);   % build MFS source panel starts and ends as C #s...
-zpan = t.Z(tpan);      % get panel end locs - only time t.Z used for now.
-zpane = circshift(zpan,-1);   % ends of each surf panel
+zpan = t.Z(tpan);      % get panel start locs - only time t.Z used for now.
+zpane = circshift(zpan,-1);   % end locs of each surf panel
 v = zpane-zpan;        % surf panel start-to-end vectors, as row of C #s
 n = -1i * (circshift(v,1)+v)/2;    % crude est outward normals
 n = n./abs(n);                     % unit normals
