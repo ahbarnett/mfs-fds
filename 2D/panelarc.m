@@ -1,7 +1,7 @@
 function [s tpan zpan] = panelarc(s,p,Nb,Nrs,reffacs,opts)
 % PANELARC.  set up boundary point panels covering one arc connecting 2 corners
 %
-% s = panelarc(s,p,Nb,Nrs,reffacs)
+% s = panelarc(s,p,Nb,Nrs,reffacs,opts)
 %
 % Inputs:
 %  s: curve struct with s.Z complex param funcs on [0,1], and s.Zp its complex
@@ -11,6 +11,8 @@ function [s tpan zpan] = panelarc(s,p,Nb,Nrs,reffacs,opts)
 %  Nb: number of equally-spaced "base" panels before refinement
 %  Nrs: 2-element vector giving # panel refinements on corner at 0 and at 1.
 %  reffacs: 2-element vector giving refinement ratios at corner at 0 and at 1.
+%  opts: (optional) struct with optional fields:
+%        opts.qtype = 'u' (uniform on panels) or 'g' (Gauss-L on panels).
 %
 % Outputs:
 %   s: struct with new boundary discretization fields including

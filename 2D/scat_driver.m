@@ -8,7 +8,7 @@ v = 1;        % verbosity: 0 = text only, 1 = total potential plot
 
 k = 30;    % wavenumber (fix all params if want to compare to ue value below)
 
-b = 1; a = .3; w = 5; % try 25;        % smooth wobbly radial shape params
+b = 1; a = .3; w = 5;    % try 25;        % smooth wobbly radial shape params
 R = @(t) b*(1 + a*cos(w*t));
 
 ti = -pi/6; ui = @(x) exp(1i*k*(cos(ti)*real(x)+sin(ti)*imag(x))); % u_inc
