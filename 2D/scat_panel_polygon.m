@@ -3,7 +3,7 @@
 % T
 
 clear; v=1;   % verbosity
-k = 300;       % wavenumber
+k = 300;       % wavenumber (for skyline keep <100 for nonres)
 paneps = 1e-10;  % desired acc, really controls pmfs & p in panels
 shape = 'u';     % 'r' rightangles city skyline, 'u' UK map
 
@@ -11,7 +11,7 @@ evalmeth = 'f';   % summation method for pot eval: 'd' direct slow, 'f' FMM.
 % linear solver choice...
 meth = 'r';  % 'l'=dense LU, 'q'=dense QR (both O(N^3)); 'r'=FLAM rskel
 flampar.rank_or_tol = 1e-10;
-flampar.p=200; %96; %64;
+flampar.p=200; %96; %64;  % 64 for k<50, 100 for k=100, 200 for k=300.
 flampar.opts = []; flampar.opts.verb = 0;
 flampar.occ=512;    % max pts per box for quadtree (might need to tune)
 % note: v sens, even eps^(-1/3) can cause umfpack singular -> nan.
@@ -35,7 +35,7 @@ end
 if v>1, figure(4); clf; plot([c c(1)], '.-'); title('polygon'); end
 
 maxL = min(maxL, 1.5*pi/k);        % < 0.75 lambda scale
-o=[]; o.geomeps = 1e-15;           % min pan size: ~eps and get sing->nan
+o=[]; o.geomeps = 1e-15;           % min pan size: ~eps and get sing->nan :(
 o.qtype = 'u';                     % surf panel quadr type 'u' or 'g'
 
 ti = -pi/6; ui = @(x) exp(1i*k*(cos(ti)*real(x)+sin(ti)*imag(x)));  % u_inc

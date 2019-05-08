@@ -37,6 +37,7 @@ produce a 2D wave scattering plot.
 * `2D/scat_amoeba_conv` : medium smooth Dirichlet scattering convergence tests  
 * `2D/scat_amoeba_conv_nF100_k100' : medium-large Dirichlet smooth scattering + movie  
 * `2D/scat_panel_onecorner_conv_demos` : small high-accuracy corner Dirichlet scattering examples
-* `2D/run_all_onecorner_conv_demos` : sweeps through 5 {0,1}-corner small shapes as above  
+* `2D/run_all_onecorner_conv_demos` : sweeps through 5 {0,1}-corner small shapes as above
+* `2D/scat_panel_polygon` : choice of two large-scale polygon examples  
 
 
