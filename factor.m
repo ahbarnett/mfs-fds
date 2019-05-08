@@ -59,45 +59,40 @@ else                       % ---------------- FDS
   F.N = N;
   F.A = A;            % the sparse mat, needed for normal eqns & iter refine.
 end
-end  % main
-
 
 % ------------- helper routines for matrix elements in FLAM --------
 
 % kernel function (see doc note about normalization)
 function K = Kfun(rx,cx,k)
-  if size(rx,1)==2
-    r = sqrt((rx(1,:)'-cx(1,:)).^2 + (rx(2,:)'-cx(2,:)).^2);
-    K = besselh(0,k*r);
-  else
-    r = sqrt((rx(1,:)'-cx(1,:)).^2 + (rx(2,:)'-cx(2,:)).^2 + (rx(3,:)'-cx(3,:)).^2);
-    K = exp(1i*k*r)./r;
-  end
+if size(rx,1)==2
+  r = sqrt((rx(1,:)'-cx(1,:)).^2 + (rx(2,:)'-cx(2,:)).^2);
+  K = besselh(0,k*r);
+else
+  r = sqrt((rx(1,:)'-cx(1,:)).^2 + (rx(2,:)'-cx(2,:)).^2 + (rx(3,:)'-cx(3,:)).^2);
+  K = exp(1i*k*r)./r;
 end
 
 % proxy points for FDS -- circle/sphere around unit box
 function pts = proxypts(dim,p)
-  if dim==2
-    theta = (1:p)*2*pi/p;
-    pts = 1.5*[cos(theta); sin(theta)];
-  else         % 3D
-    error('3d proxypts not yet supported')
-  end
+if dim==2
+  theta = (1:p)*2*pi/p;
+  pts = 1.5*[cos(theta); sin(theta)];
+else         % 3D
+  error('3d proxypts not yet supported')
 end
 
 function [Kpxy,nbr] = proxyfun(rc,rx,cx,slf,nbr,l,ctr,pxypts,k)
 % proxy function for FDS: outputs kernel matrix from pts <-> proxies
 % for either row or col points, and outputs subselected nbrs to keep.
 pts = pxypts*l + ctr';       % scale and center the proxy circle about the box
-  if strcmpi(rc,'r')
-    Kpxy = Kfun(rx(:,slf),pts,k);
-    dx = cx(1,nbr) - ctr(1);
-    dy = cx(2,nbr) - ctr(2);
-  else
-    Kpxy = Kfun(pts,cx(:,slf),k);
-    dx = rx(1,nbr) - ctr(1);
-    dy = rx(2,nbr) - ctr(2);
-  end
-  dist = sqrt(dx.^2 + dy.^2);
-  nbr = nbr(dist/l < 1.5);  % keep only nbr pts inside proxy
+if strcmpi(rc,'r')
+  Kpxy = Kfun(rx(:,slf),pts,k);
+  dx = cx(1,nbr) - ctr(1);
+  dy = cx(2,nbr) - ctr(2);
+else
+  Kpxy = Kfun(pts,cx(:,slf),k);
+  dx = rx(1,nbr) - ctr(1);
+  dy = rx(2,nbr) - ctr(2);
 end
+dist = sqrt(dx.^2 + dy.^2);
+nbr = nbr(dist/l < 1.5);  % keep only nbr pts inside proxy
