@@ -23,7 +23,7 @@ function [t s] = build_polygon(c,side,maxL,eps,opts)
 if nargin==0, test_build_polygon; return; end
 if nargin<5, opts = []; end
 
-nc = numel(c);           % # corners
+c = c(:); nc = numel(c); % # corners
 v = circshift(c,-1)-c;   % vectors from corner to next corner in CCW sense.
 l = abs(v);              % arc lengths
 v = v./l;                % unit tangent vecs fwd from each corner
