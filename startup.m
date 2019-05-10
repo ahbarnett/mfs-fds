@@ -14,41 +14,10 @@ addpath([h '/../fmmlib2d/matlab']);            % 2D FMM
 
 % following is correct if FLAM placed alongside mfs-fds directory...
 FLAM = [h '/../FLAM'];      % user: adjust to top of your FLAM installation
-run([FLAM '/startup.m']);   % note: this clears workspace :(
+run([FLAM '/startup.m']);
 
-% SuiteSparse paths
-SuiteSparse = '../SuiteSparse';
-addpath([SuiteSparse])
-addpath([SuiteSparse '/UMFPACK/MATLAB'])
-addpath([SuiteSparse '/CHOLMOD/MATLAB'])
-addpath([SuiteSparse '/AMD/MATLAB'])
-addpath([SuiteSparse '/COLAMD/MATLAB'])
-addpath([SuiteSparse '/CCOLAMD/MATLAB'])
-addpath([SuiteSparse '/CAMD/MATLAB'])
-addpath([SuiteSparse '/ssget'])
-addpath([SuiteSparse '/CXSparse/MATLAB/Demo'])
-addpath([SuiteSparse '/CXSparse/MATLAB/CSparse'])
-addpath([SuiteSparse '/LDL/MATLAB'])
-addpath([SuiteSparse '/BTF/MATLAB'])
-addpath([SuiteSparse '/KLU/MATLAB'])
-addpath([SuiteSparse '/SPQR/MATLAB'])
-addpath([SuiteSparse '/RBio/RBio'])
-addpath([SuiteSparse '/MATLAB_Tools'])
-addpath([SuiteSparse '/MATLAB_Tools/Factorize'])
-addpath([SuiteSparse '/MATLAB_Tools/MESHND'])
-addpath([SuiteSparse '/MATLAB_Tools/LINFACTOR'])
-%addpath([SuiteSparse '/MATLAB_Tools/findcomponents'])
-addpath([SuiteSparse '/MATLAB_Tools/GEE'])
-addpath([SuiteSparse '/MATLAB_Tools/shellgui'])
-addpath([SuiteSparse '/MATLAB_Tools/waitmex'])
-addpath([SuiteSparse '/MATLAB_Tools/spqr_rank'])
-addpath([SuiteSparse '/MATLAB_Tools/spqr_rank/SJget'])
-addpath([SuiteSparse '/MATLAB_Tools/SuiteSparseCollection'])
-addpath([SuiteSparse '/MATLAB_Tools/SSMULT'])
-addpath([SuiteSparse '/MATLAB_Tools/dimacs10'])
-addpath([SuiteSparse '/MATLAB_Tools/spok'])
-addpath([SuiteSparse '/MATLAB_Tools/sparseinv'])
-addpath([SuiteSparse '/Mongoose/MATLAB'])
+% following is correct if SuiteSparse placed alongside mfs-fds directory
+addpath('../SuiteSparse/SPQR/MATLAB')
 
 
 
