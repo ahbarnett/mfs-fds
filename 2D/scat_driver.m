@@ -38,7 +38,10 @@ flampar.p=64;  % num proxy pts (should depend on eps)
 flampar.opts = []; flampar.opts.verb = 0;
 flampar.occ=128;    % max pts per box for quadtree
 
-lsqpar.tau = eps^(-1/3);  % params for LSQ
+% params for LSQ
+lsqpar.meth = 'u';  % 'u'=underdetermined, 'o'=overdetermined
+lsqpar.tau = eps^(-1/3);  % constraint weighting
+lsqpar.lambda = 1e-6;  % regularization in OLS
 lsqpar.qr = 'q';   % 'q'=qr, 's'=spqr (needs SuiteSparse)
 lsqpar.refine = 0;      % 0 or 1
 

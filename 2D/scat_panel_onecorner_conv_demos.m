@@ -75,13 +75,16 @@ for i=1:numel(Nbs),  Nb=Nbs(i); Nr=Nrs(i); % ----------------- conv loop ----
 
   % linear solver choice... (these are small so dense is ok)
   meth = 'l';  % 'l'=dense LU, 'q'=dense QR (both O(N^3)); 'r'=FLAM rskel
-  
+
   flampar.rank_or_tol = 1e-12;
   flampar.p=64;
   flampar.opts = []; flampar.opts.verb = 0;
   flampar.occ=512;    % max pts per box for quadtree (might need to tune)
 
-  lsqpar.tau = 1e6; %eps^(-1/3);  % params for LSQ  (>=1e7 causes NaNs as N gro)
+  % params for LSQ
+  lsqpar.meth = 'u';  % 'u'=underdetermined, 'o'=overdetermined
+  lsqpar.tau = 1e6; %eps^(-1/3);  % constraint weighting  (>=1e7 causes NaNs as N gro)
+  lsqpar.lambda = 1e-6;  % regularization in OLS
   lsqpar.qr = 'q';   % 'q'=qr, 's'=spqr (needs SuiteSparse)
   lsqpar.refine = 1;      % 0 or 1 (latter better acc)
 

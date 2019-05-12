@@ -27,10 +27,18 @@ elseif meth=='r'
   else  % 's'
     lsfun = @(b)(spqr_ls(F,b));
   end
-  Ms = size(F.A,1); nc = Ms - F.N; [M,p] = size(B);
-  B = [B; zeros(nc-M,p)];
+  Ms = size(F.A,1); [M,p] = size(B);
+  if F.lsqpar.meth=='u'
+    nc = Ms - F.N;
+    lsB = zeros(F.N,p);
+    lsD = [B; zeros(nc-M,p)];
+  else  % 'o'
+    nc = Ms - M - F.N;
+    lsB = [B; zeros(F.N,p)];
+    lsD = zeros(nc,p);
+  end
   warning('off','FLAM:lsedc:maxIterCount')  % disable max iter warning
-  X = lsedc(lsfun,F.A(nc+1:end,:),zeros(F.N,p),F.A(1:nc,:)/F.lsqpar.tau,B,F.lsqpar.tau,0,F.lsqpar.refine);
+  X = lsedc(lsfun,F.A(nc+1:end,:),lsB,F.A(1:nc,:)/F.lsqpar.tau,lsD,F.lsqpar.tau,0,F.lsqpar.refine);
   X = X(1:F.N,:);
 end
 fprintf('solve %.3g s\n',toc(t0))

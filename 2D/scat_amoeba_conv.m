@@ -49,7 +49,10 @@ flampar.rank_or_tol = 1e-12;    % 1e-15 is 5x slower than 1e-12
 flampar.opts = []; flampar.opts.verb = 0;
 flampar.occ=300; %128;    % max pts per box for quadtree (affects speed only)
 
-lsqpar.tau = eps^(-1/3);  % params for LSQ
+% params for LSQ
+lsqpar.meth = 'u';  % 'u'=underdetermined, 'o'=overdetermined
+lsqpar.tau = eps^(-1/3);  % constraint weighting
+lsqpar.lambda = 1e-6;  % regularization in OLS
 lsqpar.qr = 'q';   % 'q'=qr, 's'=spqr (needs SuiteSparse)
 lsqpar.refine = 1;      % 0 or 1 (latter goes beyond sqrt(emach))
 
