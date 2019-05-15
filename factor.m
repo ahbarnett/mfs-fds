@@ -46,10 +46,12 @@ else                       % ---------------- FDS
   t0=tic; A = rskel_xsp(RF);  % make a big sparse mat
   w = whos('A'); fprintf('xsp: %.3g s \t %.0f (MB)\n',toc(t0),w.bytes/1e6)
   M = size(rx,2); N = size(cx,2);
+  if ~isfield(lsqpar,'meth'), lsqpar.meth='u'; end  % ULS by default
   if lsqpar.meth=='u'
     % ULS: min. norm(x) s.t. A*x = b
     A = [lsqpar.tau*A; speye(N) sparse(N,size(A,2)-N)];
   else  % 'o'
+    if ~isfield(lsqpar,'lambda'), lsqpar.lambda=0; end  % no regularization by default
     % OLS: min. norm(A*x - b)^2 + lambda^2*norm(x)  [s.t. to embedding identities]
     A = [lsqpar.tau*A(M+1:end,:); A(1:M,:); lsqpar.lambda*speye(N) sparse(N,size(A,2)-N)];
   end

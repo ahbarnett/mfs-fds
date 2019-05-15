@@ -26,10 +26,7 @@ flampar.p=128; %64;       % num proxy pts (should depend on eps)
 flampar.opts = []; flampar.opts.verb = 0;
 flampar.occ=128;    % max pts per box for quadtree
 
-% params for LSQ
-lsqpar.meth = 'u';  % 'u'=underdetermined, 'o'=overdetermined
-lsqpar.tau = eps^(-1/3);  % constraint weighting
-lsqpar.lambda = 1e-6;  % regularization in OLS
+lsqpar.tau = eps^(-1/3);  % params for LSQ
 lsqpar.qr = 'q';   % 'q'=qr, 's'=spqr (needs SuiteSparse)
 lsqpar.refine = 0;      % 0 or 1
 
@@ -41,7 +38,7 @@ for j = 1:numel(Ns);    % ---------------------------------- N-convergence
   M = round(1.2*N);         % # bdry pts
   t.t = (1:M)'/M*2*pi; t.x = exp(1i*t.t).*R(t.t);  % bdry pts
   s.t = (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);  % MFS src pts
-  imagd = 0.0012; %0.15/sqrt(N);   % crucial src dist param:  fixed or scale w/ nF or N
+  imagd = 0.0012; %0.15/sqrt(N);   % crucial src dist param:  fixed or scale w/ nF or N 
   s.t = 1i*imagd + (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);
   if v==1 % & j==1
     figure(1); clf; plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
@@ -50,7 +47,7 @@ for j = 1:numel(Ns);    % ---------------------------------- N-convergence
 
   % convert to real coords: rx = surface pts (rows), cx = source pts (cols)...
   rx = [real(t.x(:))'; imag(t.x(:))']; cx = [real(s.x(:))'; imag(s.x(:))'];
-
+  
   F = factor(k,rx,cx,meth,flampar,lsqpar);  % direct solve, into struct fac
   if meth~='r', fprintf('eps-rank of A : %d\n',rank(F.A,1e-14*normest(F.A))), end
   rhs = -ui(t.x);     % eval uinc on bdry

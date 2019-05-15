@@ -15,9 +15,7 @@ flampar.p=200; %96; %64;  % 64 for k<50, 100 for k=100, 200 for k=300.
 flampar.opts = []; flampar.opts.verb = 0;
 flampar.occ=512;    % max pts per box for quadtree (might need to tune)
 % note: v sens, even eps^(-1/3) can cause umfpack singular -> nan.
-lsqpar.meth = 'u';  % 'u'=underdetermined, 'o'=overdetermined
-lsqpar.tau = 1e5; %eps^(-1/3);  % constraint weighting  (>=1e7 causes NaNs as N gro)
-lsqpar.lambda = 1e-6;  % regularization in OLS
+lsqpar.tau = 1e5; %eps^(-1/3);  % params for LSQ  (>=1e7 causes NaNs as N gro)
 lsqpar.qr = 'q';   % 'q'=qr, 's'=spqr (needs SuiteSparse)
 lsqpar.refine = 0;      % 0 or 1 (latter better acc)
 
