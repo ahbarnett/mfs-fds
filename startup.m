@@ -4,6 +4,7 @@
 % Path setup --------------------------------------------------------
 h = fileparts(mfilename('fullpath'));        % direc of this file
 addpath(h);
+addpath([h '/fds/rskelfm'])
 addpath([h '/utils']);
 if 0
   addpath(genpath(h))                        % gives access to all subdirs
