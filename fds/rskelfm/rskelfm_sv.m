@@ -47,8 +47,11 @@ function Y = rskelfm_sv(F,X,trans)
     for i = 1:n
       rrd = F.factors(i).rrd;
       crd = F.factors(i).crd;
-      if i < n, Y(crd,:) = X(rrd,:);
-      else,     Y(crd,:) = F.factors(i).U\(F.factors(i).L\X(rrd,:));
+      if i < n, Y(crd,:) = X(rrd,:); continue; end
+      if length(rrd) > length(crd)
+        Y(crd,:) = F.factors(i).U \(F.factors(i).L'*X(rrd,:));
+      else
+        Y(crd,:) = F.factors(i).U'*(F.factors(i).L \X(rrd,:));
       end
     end
 
@@ -82,8 +85,11 @@ function Y = rskelfm_sv(F,X,trans)
     for i = 1:n
       rrd = F.factors(i).rrd;
       crd = F.factors(i).crd;
-      if i < n, Y(rrd,:) = X(crd,:);
-      else,     Y(rrd,:) = F.factors(i).L'\(F.factors(i).U'\X(crd,:));
+      if i < n, Y(rrd,:) = X(crd,:); continue; end
+      if length(rrd) > length(crd)
+        Y(rrd,:) = F.factors(i).L *(F.factors(i).U'\X(crd,:));
+      else
+        Y(rrd,:) = F.factors(i).L'\(F.factors(i).U *X(crd,:));
       end
     end
 

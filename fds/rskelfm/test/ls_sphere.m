@@ -1,40 +1,30 @@
-% Consistent least squares on the unit circle, Laplace kernel.
+% Consistent least squares on the unit sphere, Laplace kernel.
 %
-% This example solves an overdetermined least squares system arising from
-% applying the method of fundamental solutions to the Dirichlet Laplace problem
-% on the unit disk. The solution is represented as a single-layer potential on
-% an exterior circle of radius 1 + DELTA, with coefficients obtained by matching
-% at boundary values at equispaced targets on the unit circle. The matrix is
-% rectangular (tall-and-skinny) and real; we use an FMM as a fast computational
-% reference.
-%
-% This demo does the following in order:
-%
-%   - compress the matrix
-%   - check multiply error/time
-%   - check MFS solve error/time
-%   - compare LSQR/CG with/without initial guess from approximate solve
+% This is essentially the 3D version of LS_CIRCLE, where the solution is now
+% matched on the surface of the unit sphere and the MFS sources are placed at a
+% slight offset from it.
 
-function ls_circle(m,n,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
+function ls_sphere(m,n,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
 
   % set default parameters
   if nargin < 1 || isempty(m), m = 16384; end  % number of row points
   if nargin < 2 || isempty(n), n =  8192; end  % number of col points
   if nargin < 3 || isempty(delta), delta = 1e-3; end  % MFS offset
-  if nargin < 4 || isempty(occ), occ = 128; end
-  if nargin < 5 || isempty(p), p = 64; end  % number of proxy points
-  if nargin < 6 || isempty(rank_or_tol), rank_or_tol = 1e-12; end
+  if nargin < 4 || isempty(occ), occ = 1024; end
+  if nargin < 5 || isempty(p), p = 512; end  % number of proxy points
+  if nargin < 6 || isempty(rank_or_tol), rank_or_tol = 1e-6; end
   if nargin < 7 || isempty(rdpiv), rdpiv = 'l'; end  % redundant pivoting
   if nargin < 8 || isempty(store), store = 'a'; end  % FMM storage mode
   if nargin < 9 || isempty(doiter), doiter = 1; end  % naive LSQR/CG?
 
   % initialize
-  theta = (1:m)*2*pi/m; rx = (1 + delta)*[cos(theta); sin(theta)];  % row points
-  theta = (1:n)*2*pi/n; cx = [cos(theta); sin(theta)];              % col points
+  rx = randn(3,m); rx = (1 + delta)*rx./sqrt(sum(rx.^2));  % row points
+  cx = randn(3,n); cx =             cx./sqrt(sum(cx.^2));  % col points
   M = size(rx,2);
   N = size(cx,2);
-  theta = (1:p)*2*pi/p; proxy = 1.5*[cos(theta); sin(theta)];  % proxy points
-  % reference proxy points are for unit box [-1, 1]^2
+  % proxy points are quasi-uniform sampling of scaled 1.5-radius sphere
+  proxy = trisphere_subdiv(p,'v'); r = randperm(size(proxy,2));
+  proxy = proxy(:,r(1:p));  % reference proxy points are for unit box [-1, 1]^3
 
   % factor matrix using RSKELFM
   Afun = @(i,j)Afun_(i,j,rx,cx);
@@ -124,7 +114,8 @@ end
 function K = Kfun(x,y)
   dx = x(1,:)' - y(1,:);
   dy = x(2,:)' - y(2,:);
-  K = -1/(2*pi)*log(sqrt(dx.^2 + dy.^2));
+  dz = x(3,:)' - y(3,:);
+  K = 1/(4*pi)./sqrt(dx.^2 + dy.^2 + dz.^2);
 end
 
 % matrix entries
@@ -139,14 +130,16 @@ function [Kpxy,nbr] = pxyfun_(rc,rx,cx,slf,nbr,l,ctr,proxy)
     Kpxy = Kfun(rx(:,slf),pxy);
     dx = cx(1,nbr) - ctr(1);
     dy = cx(2,nbr) - ctr(2);
+    dz = cx(3,nbr) - ctr(3);
   else
     Kpxy = Kfun(pxy,cx(:,slf));
     dx = rx(1,nbr) - ctr(1);
     dy = rx(2,nbr) - ctr(2);
+    dz = rx(3,nbr) - ctr(3);
   end
-  % proxy points form circle of scaled radius 1.5 around current box
-  % keep among neighbors only those within circle
-  dist = sqrt(dx.^2 + dy.^2);
+  % proxy points form sphere of scaled radius 1.5 around current box
+  % keep among neighbors only those within sphere
+  dist = sqrt(dx.^2 + dy.^2 + dz.^2);
   nbr = nbr(dist/l < 1.5);
 end
 

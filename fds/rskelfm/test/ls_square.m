@@ -1,44 +1,32 @@
-% Consistent least squares on the unit circle, Laplace kernel.
+% Consistent least squares on the unit square, regularized Laplace kernel.
 %
-% This example solves an overdetermined least squares system arising from
-% applying the method of fundamental solutions to the Dirichlet Laplace problem
-% on the unit disk. The solution is represented as a single-layer potential on
-% an exterior circle of radius 1 + DELTA, with coefficients obtained by matching
-% at boundary values at equispaced targets on the unit circle. The matrix is
-% rectangular (tall-and-skinny) and real; we use an FMM as a fast computational
-% reference.
-%
-% This demo does the following in order:
-%
-%   - compress the matrix
-%   - check multiply error/time
-%   - check MFS solve error/time
-%   - compare LSQR/CG with/without initial guess from approximate solve
+% This is like LS_CIRCLE except now we match the solution on the unit square
+% with regularized Laplace sources over the same geometry. This setup is
+% somewhat atypical for MFS problems, but it is useful for performance
+% benchmarking in 2D.
 
-function ls_circle(m,n,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
+function ls_square(m,n,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
 
   % set default parameters
   if nargin < 1 || isempty(m), m = 16384; end  % number of row points
   if nargin < 2 || isempty(n), n =  8192; end  % number of col points
-  if nargin < 3 || isempty(delta), delta = 1e-3; end  % MFS offset
+  if nargin < 3 || isempty(delta), delta = 1e-3; end  % MFS regularization
   if nargin < 4 || isempty(occ), occ = 128; end
   if nargin < 5 || isempty(p), p = 64; end  % number of proxy points
-  if nargin < 6 || isempty(rank_or_tol), rank_or_tol = 1e-12; end
+  if nargin < 6 || isempty(rank_or_tol), rank_or_tol = 1e-6; end
   if nargin < 7 || isempty(rdpiv), rdpiv = 'l'; end  % redundant pivoting
   if nargin < 8 || isempty(store), store = 'a'; end  % FMM storage mode
   if nargin < 9 || isempty(doiter), doiter = 1; end  % naive LSQR/CG?
 
   % initialize
-  theta = (1:m)*2*pi/m; rx = (1 + delta)*[cos(theta); sin(theta)];  % row points
-  theta = (1:n)*2*pi/n; cx = [cos(theta); sin(theta)];              % col points
-  M = size(rx,2);
-  N = size(cx,2);
+  rx = rand(2,m);  M = size(rx,2);  % row points
+  cx = rand(2,n);  N = size(cx,2);  % col points
   theta = (1:p)*2*pi/p; proxy = 1.5*[cos(theta); sin(theta)];  % proxy points
   % reference proxy points are for unit box [-1, 1]^2
 
   % factor matrix using RSKELFM
-  Afun = @(i,j)Afun_(i,j,rx,cx);
-  pxyfun = @(rc,rx,cx,slf,nbr,l,ctr)pxyfun_(rc,rx,cx,slf,nbr,l,ctr,proxy);
+  Afun = @(i,j)Afun_(i,j,rx,cx,delta);
+  pxyfun = @(rc,rx,cx,slf,nbr,l,ctr)pxyfun_(rc,rx,cx,slf,nbr,l,ctr,proxy,delta);
   opts = struct('rdpiv',rdpiv,'verb',1);
   tic; F = rskelfm(Afun,rx,cx,occ,rank_or_tol,pxyfun,opts); t = toc;
   w = whos('F'); mem = w.bytes/1e6;
@@ -121,26 +109,26 @@ function ls_circle(m,n,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
 end
 
 % kernel function
-function K = Kfun(x,y)
+function K = Kfun(x,y,delta)
   dx = x(1,:)' - y(1,:);
   dy = x(2,:)' - y(2,:);
-  K = -1/(2*pi)*log(sqrt(dx.^2 + dy.^2));
+  K = -1/(2*pi)*log(sqrt(dx.^2 + dy.^2 + delta^2));  % regularized
 end
 
 % matrix entries
-function A = Afun_(i,j,rx,cx)
-  A = Kfun(rx(:,i),cx(:,j));
+function A = Afun_(i,j,rx,cx,delta)
+  A = Kfun(rx(:,i),cx(:,j),delta);
 end
 
 % proxy function
-function [Kpxy,nbr] = pxyfun_(rc,rx,cx,slf,nbr,l,ctr,proxy)
+function [Kpxy,nbr] = pxyfun_(rc,rx,cx,slf,nbr,l,ctr,proxy,delta)
   pxy = proxy*l + ctr';  % scale and translate reference points
   if rc == 'r'
-    Kpxy = Kfun(rx(:,slf),pxy);
+    Kpxy = Kfun(rx(:,slf),pxy,delta);
     dx = cx(1,nbr) - ctr(1);
     dy = cx(2,nbr) - ctr(2);
   else
-    Kpxy = Kfun(pxy,cx(:,slf));
+    Kpxy = Kfun(pxy,cx(:,slf),delta);
     dx = rx(1,nbr) - ctr(1);
     dy = rx(2,nbr) - ctr(2);
   end
