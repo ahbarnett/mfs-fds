@@ -76,10 +76,7 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
   if ~isfield(opts,'verb'), opts.verb = 0; end
 
   % check inputs
-  opts.rdpiv = lower(opts.rdpiv);
-  assert(opts.rdpiv == 'l' || opts.rdpiv == 'q' || opts.rdpiv == 'r', ...
-         'FLAM:rskelfr:invalidRdpiv', ...
-         'Redundant pivoting parameter must be one of ''L'', ''Q'', or ''R''.')
+  opts.rdpiv = chkrdpiv(opts.rdpiv);
 
   % print header
   if opts.verb
@@ -205,7 +202,7 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
       ncrd = length(crd);
       if lvl > 1
         if nrrd > ncrd
-            [rsk,rrd,rT] = rdpivot(K(rrd,crd),rsk,rrd,rT,opts.rdpiv);
+            [rsk,rrd,rT] = rdpivot(K(rrd,crd) ,rsk,rrd,rT,opts.rdpiv);
             nrrd = length(rrd);
         elseif nrrd < ncrd
             [csk,crd,cT] = rdpivot(K(rrd,crd)',csk,crd,cT,opts.rdpiv);
@@ -275,24 +272,4 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
   % finish
   F.factors = F.factors(1:n);
   if opts.verb, fprintf([repmat('-',1,69) '\n']), end
-end
-
-% pivoting for redundant subselection -- row-oriented so that default LU is fast
-function [sk,rd,T] = rdpivot(X,sk,rd,T,mode)
-  [m,n] = size(X);
-  k = min(m,n);
-  if k > 0
-    if     mode == 'l', [~,~,p] = lu(X ,'vector');  % find "best" redundant ...
-    elseif mode == 'q', [~,~,p] = qr(X','vector');  % ... points to eliminate
-    elseif mode == 'r', p = randperm(n);
-    end
-    sk = [sk rd(p(k+1:end))];  % augment skeletons with remainder
-    idx = p(1:k);
-    rd = rd(idx);
-    T = [T(:,idx); zeros(length(sk)-size(T,1),length(rd))];
-  else
-    sk = [sk rd];
-    rd = [];
-    T = zeros(length(sk),length(rd));
-  end
 end
