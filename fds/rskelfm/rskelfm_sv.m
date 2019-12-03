@@ -6,6 +6,8 @@
 %    While this is not a true pseudoinverse, we will continue to use the same
 %    notation when referring to it for convenience.
 %
+%    Typical complexity: same as RSKELFM_MV.
+%
 %    Y = RSKELFM_SV(F,X) produces the matrix Y by applying the factored
 %    pseudoinverse of the factored matrix F to the matrix X.
 %
