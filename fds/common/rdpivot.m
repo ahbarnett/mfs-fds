@@ -34,9 +34,15 @@ function [sk,rd,T] = rdpivot(A,sk,rd,T,mode)
     warning('FLAM:rdpivot:badRdDim','Unexpected redundant submatrix size.');
     return  % warn and exit if short-and-fat or dimensions don't match
   end
+  if n == 0  % special case (Octave LU misbehaves)
+    sk = [sk rd];
+    rd = [];
+    T = zeros(length(sk),0);
+    return
+  end
   if     mode == 'l', [~,~,p] = lu(A ,'vector');  % find "best" redundant ...
   elseif mode == 'q', [~,~,p] = qr(A','vector');  % ... points to eliminate
-  elseif mode == 'r', p = randperm(n);
+  elseif mode == 'r', p = randperm(m);
   end
   sk = [sk rd(p(n+1:end))];  % augment skeletons with remainder
   idx = p(1:n);

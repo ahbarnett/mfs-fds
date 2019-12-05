@@ -122,7 +122,7 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
   rrem  = true(M,1); crem  = true(N,1);  % which row/cols remain?
   rcrem = true(M,1); ccrem = true(N,1);  % which row/cols remain for ID?
   S = cell(nbox,1);                      % storage for modified diagonal blocks
-  rI = zeros(M,1); cI = zeros(N,1);      % auxiliary arrays for indexing
+  rI = zeros(M,1); cI = zeros(N,1);      % for indexing
 
   % loop over tree levels
   for lvl = t.nlvl:-1:1
