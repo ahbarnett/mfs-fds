@@ -4,11 +4,11 @@
 % matched on the surface of the unit sphere and the MFS sources are placed at a
 % slight offset from it.
 
-function ls_sphere(m,n,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
+function ls_sphere(M,N,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
 
   % set default parameters
-  if nargin < 1 || isempty(m), m = 16384; end  % number of row points
-  if nargin < 2 || isempty(n), n =  8192; end  % number of col points
+  if nargin < 1 || isempty(M), M = 16384; end  % number of row points
+  if nargin < 2 || isempty(N), N =  8192; end  % number of col points
   if nargin < 3 || isempty(delta), delta = 1e-3; end  % MFS offset
   if nargin < 4 || isempty(occ), occ = 1024; end
   if nargin < 5 || isempty(p), p = 512; end  % number of proxy points
@@ -18,10 +18,9 @@ function ls_sphere(m,n,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
   if nargin < 9 || isempty(doiter), doiter = 1; end  % naive LSQR/CG?
 
   % initialize
-  rx = randn(3,m); rx = (1 + delta)*rx./sqrt(sum(rx.^2));  % row points
-  cx = randn(3,n); cx =             cx./sqrt(sum(cx.^2));  % col points
-  M = size(rx,2);
-  N = size(cx,2);
+  rx = trisphere_subdiv(M,'v'); cx = trisphere_subdiv(N,'v');
+  r = randperm(size(rx,2)); rx = (1 + delta)*rx(:,r(1:M));  % row points
+  r = randperm(size(cx,2)); cx =             cx(:,r(1:N));  % col points
   % proxy points are quasi-uniform sampling of scaled 1.5-radius sphere
   proxy = trisphere_subdiv(p,'v'); r = randperm(size(proxy,2));
   proxy = proxy(:,r(1:p));  % reference proxy points are for unit box [-1, 1]^3

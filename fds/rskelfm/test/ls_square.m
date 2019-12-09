@@ -2,14 +2,14 @@
 %
 % This is like LS_CIRCLE except now we match the solution on the unit square
 % with regularized Laplace sources over the same geometry. This setup is
-% somewhat atypical for MFS problems, but it is useful for performance
-% benchmarking in 2D.
+% somewhat atypical for MFS problems but is useful for performance benchmarking
+% in 2D.
 
-function ls_square(m,n,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
+function ls_square(M,N,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
 
   % set default parameters
-  if nargin < 1 || isempty(m), m = 16384; end  % number of row points
-  if nargin < 2 || isempty(n), n =  8192; end  % number of col points
+  if nargin < 1 || isempty(M), M = 16384; end  % number of row points
+  if nargin < 2 || isempty(N), N =  8192; end  % number of col points
   if nargin < 3 || isempty(delta), delta = 1e-3; end  % MFS regularization
   if nargin < 4 || isempty(occ), occ = 128; end
   if nargin < 5 || isempty(p), p = 64; end  % number of proxy points
@@ -19,8 +19,11 @@ function ls_square(m,n,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
   if nargin < 9 || isempty(doiter), doiter = 1; end  % naive LSQR/CG?
 
   % initialize
-  rx = rand(2,m);  M = size(rx,2);  % row points
-  cx = rand(2,n);  N = size(cx,2);  % col points
+  m = ceil(sqrt(M)); [x1,x2] = ndgrid((1:m)/m); rx = [x1(:) x2(:)]';
+  r = randperm(size(rx,2)); rx = rx(:,r(1:M));  % row points
+  n = ceil(sqrt(N)); [x1,x2] = ndgrid((1:n)/n); cx = [x1(:) x2(:)]';
+  r = randperm(size(cx,2)); cx = cx(:,r(1:N));  % col points
+  clear x1 x2
   theta = (1:p)*2*pi/p; proxy = 1.5*[cos(theta); sin(theta)];  % proxy points
   % reference proxy points are for unit box [-1, 1]^2
 
