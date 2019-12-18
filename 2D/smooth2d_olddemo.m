@@ -31,10 +31,10 @@ for i=1:numel(Ns), N = Ns(i);
   t.t = (1:M)'/M*2*pi; t.x = exp(1i*t.t).*R(t.t); t = quadr(t); % bdry pts
   f = -ui(t.x);  % RHS
   s.t = (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t); % MFS src pts
-  
+
   % scale d w/ 1/N
   d = 100/N;
-  
+
   s.t = 1i*d + (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);
   if v, figure(1); plot(t.x, 'b.-'); hold on; plot(s.x, 'r.'); plot(x0,'+');
     axis equal; title(sprintf('N=%d, d=%g',N,d)); hold off; drawnow; end
@@ -135,7 +135,7 @@ hold on; semilogy(Ns,nrms,'g+-'); legend('u pt convergence','||c||_2'); end
 
   % proxy function - from ie_circle, with weights removed, why 2pi/N here?
   function [Kpxy,nbr] = pxyfun(rc,rx,cx,slf,nbr,l,ctr)
-    pxy = bsxfun(@plus,proxy*l,ctr');
+    pxy = bsxfun(@plus,proxy*l,ctr);
     if strcmpi(rc,'r')
 %%      Kpxy = Kfun(rx(:,slf),pxy,'s')*(2*pi/N); % monopoles for proxy
 %% note: (2*pi/N) is a quadrature weight for unit circle geometry
