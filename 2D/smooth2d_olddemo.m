@@ -89,7 +89,7 @@ for i=1:numel(Ns), N = Ns(i);
       nC = Ms - N;
       X = f;  % my RHS
       t0=tic; [c,cres,niter] = ls([X; zeros(nC-M,1)]); %%[c,cres,niter] = ls(X); % is 1st arg the output vector?
-      fprintf('equ-const lsq %.3g s, cres=%.3g, niter=%d\n',toc(t0),cres,niter)
+      fprintf('equ-const lsq %.3g s, cres=%.3g, niter=%d\n',toc(t0),norm(cres),niter)
     end
     Ac = ifmm_mv(G,c,@Afun); % that's why needed ifmm setup
     re(i) = norm(Ac-f); % resid nrm
@@ -177,7 +177,7 @@ hold on; semilogy(Ns,nrms,'g+-'); legend('u pt convergence','||c||_2'); end
 %% underdetermined LSE solve (from uls_circle)
   function [Y,cres,niter] = ls(X)
     n = size(X,2);
-    [Y,cres,niter] = lsedc(@lsfun,A(nC+1:end,:),zeros(N,n),A(1:nC,:),X,tau);
+    [Y,cres,niter] = lsedc(@lsfun,A(nC+1:end,:),zeros(N,n),A(1:nC,:)/tau,X,tau);
     Y = Y(1:N,:);
   end
 
