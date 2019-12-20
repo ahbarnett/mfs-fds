@@ -100,5 +100,4 @@ else
   Kpxy = Kfun(pts,cx(:,slf),k);
   dr = rx(:,nbr) - ctr;
 end
-dist = sqrt(dx.^2 + dy.^2);
 nbr = nbr(sum((dr./l).^2) < 1.5^2);  % keep only nbr pts inside proxy
