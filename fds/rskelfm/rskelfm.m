@@ -130,7 +130,7 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
     nlvl = nlvl + 1;
     nrrem1  = sum(rrem ); ncrem1  = sum(crem );  % remaining row/cols at start
     nrcrem1 = sum(rcrem); nccrem1 = sum(ccrem);  % remaining candidates at start
-    l = t.lrt/2^(lvl - 1);
+    l = t.l(:,lvl);
 
     % pull up skeletons from children
     for i = t.lvp(lvl)+1:t.lvp(lvl+1)

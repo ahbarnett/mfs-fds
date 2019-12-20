@@ -135,21 +135,18 @@ hold on; semilogy(Ns,nrms,'g+-'); legend('u pt convergence','||c||_2'); end
 
   % proxy function - from ie_circle, with weights removed, why 2pi/N here?
   function [Kpxy,nbr] = pxyfun(rc,rx,cx,slf,nbr,l,ctr)
-    pxy = bsxfun(@plus,proxy*l,ctr);
+    pxy = bsxfun(@plus,proxy.*l,ctr);
     if strcmpi(rc,'r')
 %%      Kpxy = Kfun(rx(:,slf),pxy,'s')*(2*pi/N); % monopoles for proxy
 %% note: (2*pi/N) is a quadrature weight for unit circle geometry
       Kpxy = Kfun(rx(:,slf),pxy)*(2*pi/N);
-      dx = cx(1,nbr) - ctr(1);
-      dy = cx(2,nbr) - ctr(2);
+      dr = cx(:,nbr) - ctr;
     elseif strcmpi(rc,'c')
 %%      Kpxy = Kfun(pxy,cx(:,slf),'d')*(2*pi/N); % why flips to dipoles here?
       Kpxy = Kfun(pxy,cx(:,slf))*(2*pi/N);
-      dx = rx(1,nbr) - ctr(1);            % (makes no difference)
-      dy = rx(2,nbr) - ctr(2);
+      dr = rx(:,nbr) - ctr;            % (makes no difference)
     end
-    dist = sqrt(dx.^2 + dy.^2);
-    nbr = nbr(dist/l < 1.5);
+    nbr = nbr(sum((dr./l).^2) < 1.5^2);
   end
 
   % sparse LU solve - from ie_circle, not used for ols_square

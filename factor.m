@@ -92,15 +92,13 @@ end
 function [Kpxy,nbr] = proxyfun(rc,rx,cx,slf,nbr,l,ctr,pxypts,k)
 % proxy function for FDS: outputs kernel matrix from pts <-> proxies
 % for either row or col points, and outputs subselected nbrs to keep.
-pts = pxypts*l + ctr;       % scale and center the proxy circle about the box
+pts = pxypts.*l + ctr;       % scale and center the proxy circle about the box
 if strcmpi(rc,'r')
   Kpxy = Kfun(rx(:,slf),pts,k);
-  dx = cx(1,nbr) - ctr(1);
-  dy = cx(2,nbr) - ctr(2);
+  dr = cx(:,nbr) - ctr;
 else
   Kpxy = Kfun(pts,cx(:,slf),k);
-  dx = rx(1,nbr) - ctr(1);
-  dy = rx(2,nbr) - ctr(2);
+  dr = rx(:,nbr) - ctr;
 end
 dist = sqrt(dx.^2 + dy.^2);
-nbr = nbr(dist/l < 1.5);  % keep only nbr pts inside proxy
+nbr = nbr(sum((dr./l).^2) < 1.5^2);  % keep only nbr pts inside proxy
