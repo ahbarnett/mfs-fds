@@ -31,15 +31,16 @@ elseif meth=='r'
   if F.lsqpar.meth=='u'
     nc = Ms - F.N;
     lsB = zeros(F.N,p);
-    lsD = [B; zeros(nc-M,p)];
+    lsD = [B(F.p,:); zeros(nc-M,p)];
   else  % 'o'
     nc = Ms - M - F.N;
-    lsB = [B; zeros(F.N,p)];
+    lsB = [B(F.p,:); zeros(F.N,p)];
     lsD = zeros(nc,p);
   end
   warning('off','FLAM:lsedc:maxIterCount')  % disable max iter warning
   X = lsedc(lsfun,F.A(nc+1:end,:),lsB,F.A(1:nc,:)/F.lsqpar.tau,lsD,F.lsqpar.tau,0,F.lsqpar.refine);
   X = X(1:F.N,:);
+  X(F.q,:) = X;
 end
 fprintf('solve %.3g s\n',toc(t0))
 

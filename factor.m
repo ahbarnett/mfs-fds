@@ -43,7 +43,7 @@ else                       % ---------------- FDS
   t0=tic; RF = rskel(Afun,rx,cx,flampar.occ,flampar.rank_or_tol,pxyfun,flampar.opts);  % compress
   w = whos('RF'); fprintf('rskel: %.3g s \t %.0f (MB)\n',toc(t0),w.bytes/1e6)
 
-  t0=tic; A = rskel_xsp(RF);  % make a big sparse mat
+  t0=tic; [A,p,q] = rskel_xsp(RF);  % make a big sparse mat
   w = whos('A'); fprintf('xsp: %.3g s \t %.0f (MB)\n',toc(t0),w.bytes/1e6)
   M = size(rx,2); N = size(cx,2);
   if ~isfield(lsqpar,'meth'), lsqpar.meth='u'; end  % ULS by default
@@ -66,6 +66,8 @@ else                       % ---------------- FDS
   F.lsqpar = lsqpar;  % store for solve
   F.N = N;
   F.A = A;            % the sparse mat, needed for normal eqns & iter refine.
+  F.p = p;            % row perm
+  F.q = q;            % col perm
 end
 
 % ------------- helper routines for matrix elements in FLAM --------
