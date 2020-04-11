@@ -5,18 +5,19 @@
 % somewhat atypical for MFS problems but is useful for performance benchmarking
 % in 2D.
 
-function ls_square(M,N,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
+function ls_square(M,N,delta,occ,p,rank_or_tol,rdpiv,fastsv,store,doiter)
 
   % set default parameters
-  if nargin < 1 || isempty(M), M = 16384; end  % number of row points
-  if nargin < 2 || isempty(N), N =  8192; end  % number of col points
-  if nargin < 3 || isempty(delta), delta = 1e-3; end  % MFS regularization
-  if nargin < 4 || isempty(occ), occ = 128; end
-  if nargin < 5 || isempty(p), p = 64; end  % number of proxy points
-  if nargin < 6 || isempty(rank_or_tol), rank_or_tol = 1e-6; end
-  if nargin < 7 || isempty(rdpiv), rdpiv = 'l'; end  % redundant pivoting
-  if nargin < 8 || isempty(store), store = 'a'; end  % FMM storage mode
-  if nargin < 9 || isempty(doiter), doiter = 1; end  % naive LSQR/CG?
+  if nargin <  1 || isempty(M), M = 16384; end  % number of row points
+  if nargin <  2 || isempty(N), N =  8192; end  % number of col points
+  if nargin <  3 || isempty(delta), delta = 1e-3; end  % MFS regularization
+  if nargin <  4 || isempty(occ), occ = 128; end
+  if nargin <  5 || isempty(p), p = 64; end  % number of proxy points
+  if nargin <  6 || isempty(rank_or_tol), rank_or_tol = 1e-6; end
+  if nargin <  7 || isempty(rdpiv), rdpiv = 'l'; end  % redundant pivoting
+  if nargin <  8 || isempty(fastsv), fastsv = 'n'; end  % fast solve mode
+  if nargin <  9 || isempty(store), store = 'a'; end  % FMM storage mode
+  if nargin < 10 || isempty(doiter), doiter = 1; end  % naive LSQR/CG?
 
   % initialize
   m = ceil(sqrt(M)); [x1,x2] = ndgrid((1:m)/m); rx = [x1(:) x2(:)]';
@@ -30,7 +31,7 @@ function ls_square(M,N,delta,occ,p,rank_or_tol,rdpiv,store,doiter)
   % factor matrix using RSKELFM
   Afun = @(i,j)Afun_(i,j,rx,cx,delta);
   pxyfun = @(rc,rx,cx,slf,nbr,l,ctr)pxyfun_(rc,rx,cx,slf,nbr,l,ctr,proxy,delta);
-  opts = struct('rdpiv',rdpiv,'verb',1);
+  opts = struct('rdpiv',rdpiv,'fastsv',fastsv,'verb',1);
   tic; F = rskelfm(Afun,rx,cx,occ,rank_or_tol,pxyfun,opts); t = toc;
   w = whos('F'); mem = w.bytes/1e6;
   fprintf('rskelfm time/mem: %10.4e (s) / %6.2f (MB)\n',t,mem)

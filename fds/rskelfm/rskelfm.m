@@ -1,24 +1,36 @@
 % RSKELFM  Recursive skeletonization factorization for MFS.
 %
 %    This is a generalization of RSKELF in FLAM for the MFS setting, i.e.,
-%    consistent linear least squares. Specifically, row/column ID skeletons are
-%    computed in the same way, but only a square subset is eliminated at each
-%    step in order to fit into the existing framework. The resulting generalized
-%    LDU decomposition now has rectangular D, where all blocks except the last
-%    one are square and the final block has the same "excess rectangularity" as
-%    the original matrix. Least squares systems A*X ~ B can then be solved
-%    approximately as X = U\D\L\B, which should achieve small residuals provided
-%    that B lies in RANGE(A).
+%    consistent linear least squares with moderate solution norm. Specifically,
+%    we make two important modifications during the processing of each block:
+%
+%      - If a block is too rectangular -- namely, to the point that the entire
+%        block row or column, including the diagonal, is low-rank, given the
+%        assumed structure -- then it is explicitly rank-reduced first as a
+%        preprocessing step.
+%
+%      - Then row/column skeletons are computed as usual but augmented (i.e.,
+%        redundant indices are subselected) as necessary to form a square
+%        redundant-redundant submatrix so that it can be eliminated within the
+%        existing framework.
+%
+%    The combination of these two steps leads to an algorithm that works only
+%    with "mostly square" blocks. The result is again basically a generalized
+%    LDU decomposition A = L*D*U, where L and U can now be rectangular, as they
+%    may include rank reductions, but D remains square. Least squares systems
+%    A*X ~ B can then be solved approximately as X = U\D\L\B, which should
+%    achieve a small residual provided that B lies in the range of A.
 %
 %    Typical complexity for [M,N] = SIZE(A) with M >= N without loss of
-%    generality: O(N + (M - N)*LOG^3(N)) in 1D and
-%    O(N^(3*(1 - 1/D)) + (M - N)*N^(2*(1 - 1/D))) in D dimensions.
+%    generality: O(M + N) in 1D and O(M + N^(3*(1 - 1/D))) in D dimensions.
 %
 %    F = RSKELFM(A,RX,CX,OCC,RANK_OR_TOL) produces a factorization F of the
 %    matrix A acting on the row and column points RX and CX, respectively, using
 %    tree occupancy parameter OCC and local precision parameter RANK_OR_TOL. See
-%    HYPOCT and ID for details. Since no proxy function is supplied, this simply
-%    performs a naive compression of all off-diagonal blocks.
+%    HYPOCT and ID for details. Note that both row/column points are sorted
+%    together in the same tree, so OCC should be set roughly twice the desired
+%    leaf size. Since no proxy function is supplied, this simply performs a
+%    naive compression of all off-diagonal blocks.
 %
 %    F = RSKELFM(A,RX,CX,OCC,RANK_OR_TOL,PXYFUN) accelerates the compression
 %    using the proxy function PXYFUN to capture the far field. This is a
@@ -55,13 +67,15 @@
 %               is used if RDPIV = 'L', QR pivoting if RDPIV = 'Q', and random
 %               if RDPIV = 'R' (default: RDPIV = 'L').
 %
+%      - FASTSV: fast solve mode by skipping rank reduction pseudoinverses (and
+%                generation of their factors). Skip none if FASTSV = 'N', skip
+%                for row reductions if FASTSV = 'R', skip for column reductions
+%                if FASTSV = 'C', and skip for both if FASTSV = 'B' (default:
+%                FASTSV = 'N').
+%
 %      - VERB: display status info if VERB = 1 (default: VERB = 0). This prints
 %              to screen a table tracking row/column compression statistics
-%              through level. Two sets of data are shown for each type in terms
-%              of the actual number of points remaining and the number of
-%              compression "candidates" remaining, which constitute a subset of
-%              the former and should scale as in the standard RSKELF. Special
-%              levels: 'T', tree sorting.
+%              through level. Special levels: 'T', tree sorting.
 %
 %    See also HYPOCT, ID, RSKELFM_MV, RSKELFM_SV.
 
@@ -73,6 +87,7 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
   if ~isfield(opts,'lvlmax'), opts.lvlmax = Inf; end
   if ~isfield(opts,'ext'), opts.ext = []; end
   if ~isfield(opts,'rdpiv'), opts.rdpiv = 'l'; end
+  if ~isfield(opts,'fastsv'), opts.fastsv = 'n'; end
   if ~isfield(opts,'verb'), opts.verb = 0; end
 
   % check inputs
@@ -114,22 +129,20 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
   % initialize
   nbox = t.lvp(end);
   e = cell(nbox,1);
-  F = struct('rsk',e,'rrd',e,'csk',e,'crd',e,'rT',e,'cT',e,'L',e,'U',e,'p', ...
-             e,'E',e,'F',e);
+  F = struct('pm',zeros(nbox,1),'psk',e,'prd',e,'pT',e,'pL',e,'rsk',e,'rrd', ...
+             e,'csk',e,'crd',e,'rT',e,'cT',e,'L',e,'U',e,'p',e,'E',e,'F',e);
   F = struct('M',M,'N',N,'nlvl',t.nlvl,'lvp',zeros(1,t.nlvl+1),'factors',F);
   nlvl = 0;
   n = 0;
-  rrem  = true(M,1); crem  = true(N,1);  % which row/cols remain?
-  rcrem = true(M,1); ccrem = true(N,1);  % which row/cols remain for ID?
-  S = cell(nbox,1);                      % storage for modified diagonal blocks
-  rI = zeros(M,1); cI = zeros(N,1);      % for indexing
+  rrem = true(M,1); crem = true(N,1);  % which row/cols remain?
+  S = cell(nbox,1);                    % storage for modified diagonal blocks
+  rI = zeros(M,1); cI = zeros(N,1);    % for indexing
 
   % loop over tree levels
   for lvl = t.nlvl:-1:1
     ts = tic;
     nlvl = nlvl + 1;
-    nrrem1  = sum(rrem ); ncrem1  = sum(crem );  % remaining row/cols at start
-    nrcrem1 = sum(rcrem); nccrem1 = sum(ccrem);  % remaining candidates at start
+    nrrem1 = nnz(rrem); ncrem1 = nnz(crem);  % remaining row/cols at start
     l = t.l(:,lvl);
 
     % pull up skeletons from children
@@ -146,6 +159,7 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
       cnbr = [t.nodes(t.nodes(i).nbor).cxi];
       nrslf = length(rslf);
       ncslf = length(cslf);
+      ctr = t.nodes(i).ctr;
 
       % generate modified diagonal block
       S{i} = full(A(rslf,cslf));
@@ -160,84 +174,87 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
         end
       end
 
-      % find restriction to compression candidates
-      rcslf = find(rcrem(rslf))';
-      ccslf = find(ccrem(cslf))';
-      rnbr = rnbr(find(rcrem(rnbr)));
-      cnbr = cnbr(find(ccrem(cnbr)));
+      % preprocess if too rectangular
+      pm = 'n'; psk = []; prd = []; pT = []; pL = [];
+      rKpxy = []; cKpxy = [];
+      if nrslf > ncslf
+        [rKpxy,cnbr] = genpxy('r',pxyfun,rslf,cnbr,find(crem),rx,cx,lvl,l,ctr);
+        if nrslf > ncslf + length(cnbr) + size(rKpxy,2)  % too many rows
+          pm = 'r';
+          K = [S{i} full(A(rslf,cnbr)) rKpxy]';
+          [psk,prd,pT] = id(K,0);                        % square up
+          if opts.fastsv ~= 'r' && opts.fastsv ~= 'b'
+            pL = chol(eye(length(psk)) + pT*pT','lower');
+          end
+          rKpxy = rKpxy(psk,:);
+          S{i} = S{i}(psk,:);
+          psk = rslf(psk); prd = rslf(prd); rslf = psk;
+          rrem(prd) = 0;
+        end
+      elseif ncslf > nrslf
+        [cKpxy,rnbr] = genpxy('c',pxyfun,cslf,rnbr,find(rrem),rx,cx,lvl,l,ctr);
+        if ncslf > nrslf + length(rnbr) + size(cKpxy,1);  % too many cols
+          pm = 'c';
+          K = [S{i}; full(A(rnbr,cslf)); cKpxy];
+          [psk,prd,pT] = id(K,0);                         % square up
+          if opts.fastsv ~= 'c' && opts.fastsv ~= 'b'
+            pL = chol(eye(length(psk)) + pT*pT','lower');
+          end
+          cKpxy = cKpxy(:,psk);
+          S{i} = S{i}(:,psk);
+          psk = cslf(psk); prd = cslf(prd); cslf = psk;
+          crem(prd) = 0;
+        end
+      end
 
       % compress row space
-      Kpxy = zeros(nrslf,0);
-      if lvl > 2
-        if isempty(pxyfun), cnbr = setdiff(find(crem),cslf);
-        else, [Kpxy,cnbr] = pxyfun('r',rx,cx,rslf,cnbr,l,t.nodes(i).ctr);
-        end
+      if isempty(rKpxy)
+        [rKpxy,cnbr] = genpxy('r',pxyfun,rslf,cnbr,find(crem),rx,cx,lvl,l,ctr);
       end
-      K = [full(A(rslf,cnbr)) Kpxy]';          % full matrix for block
-      [rsk,~,~] = id(K(:,rcslf),rank_or_tol);  % compress among candidates only
-      rsk = rcslf(rsk);
-      rrd = setdiff(1:nrslf,rsk);
-      rT = K(:,rsk)\K(:,rrd);                  % full interpolation operator
+      K = [full(A(rslf,cnbr)) rKpxy]';
+      [rsk,rrd,rT] = id(K,rank_or_tol);
 
       % compress column space
-      Kpxy = zeros(0,ncslf);
-      if lvl > 2
-        if isempty(pxyfun), rnbr = setdiff(find(rrem),rslf);
-        else, [Kpxy,rnbr] = pxyfun('c',rx,cx,cslf,rnbr,l,t.nodes(i).ctr);
-        end
+      if isempty(cKpxy)
+        [cKpxy,rnbr] = genpxy('c',pxyfun,cslf,rnbr,find(rrem),rx,cx,lvl,l,ctr);
       end
-      K = [full(A(rnbr,cslf)); Kpxy];          % full matrix for block
-      [csk,~,~] = id(K(:,ccslf),rank_or_tol);  % compress among candidates only
-      csk = ccslf(csk);
-      crd = setdiff(1:ncslf,csk);
-      cT = K(:,csk)\K(:,crd);                  % full interpolation operator
-
-      % update candidates
-      rcrem(rslf(rrd)) = 0;
-      ccrem(cslf(crd)) = 0;
+      K = [full(A(rnbr,cslf)); cKpxy];
+      [csk,crd,cT] = id(K,rank_or_tol);
 
       % find good redundant pivots
       K = S{i};
       nrrd = length(rrd);
       ncrd = length(crd);
-      if lvl > 1
-        if nrrd > ncrd
-            [rsk,rrd,rT] = rdpivot(K(rrd,crd) ,rsk,rrd,rT,opts.rdpiv);
-            nrrd = length(rrd);
-        elseif nrrd < ncrd
-            [csk,crd,cT] = rdpivot(K(rrd,crd)',csk,crd,cT,opts.rdpiv);
-            ncrd = length(crd);
-        end
+      if nrrd > ncrd
+        [rsk,rrd,rT] = rdpivot(K(rrd,crd) ,rsk,rrd,rT,opts.rdpiv);
+      elseif nrrd < ncrd
+        [csk,crd,cT] = rdpivot(K(rrd,crd)',csk,crd,cT,opts.rdpiv);
       end
 
       % move on if no compression
-      if isempty(rrd) && isempty(crd), continue; end
+      if isempty(prd) && isempty(rrd) && isempty(crd), continue; end
 
       % compute factors
       K(rrd,:) = K(rrd,:) - rT'*K(rsk,:);
       K(:,crd) = K(:,crd) - K(:,csk)*cT;
-      if nrrd == ncrd  % for all non-root
-        [L,U,p] = lu(K(rrd,crd),'vector');
-        E = K(rsk,crd)/U;
-        G = L\K(rrd(p),csk);
-        S{i} = S{i}(rsk,csk) - E*G;  % update self-interaction
-      else             % can only happen at root
-        if nrrd > ncrd, [L,U] = qr(K(rrd,crd) ,0);
-        else,           [Q,R] = qr(K(rrd,crd)',0); L = R'; U = Q';
-        end
-        p = [];
-        E = zeros(0,nrrd);
-        G = zeros(ncrd,0);
-      end
+      [L,U,p] = lu(K(rrd,crd),'vector');
+      E = K(rsk,crd)/U;
+      G = L\K(rrd(p),csk);
+      S{i} = S{i}(rsk,csk) - E*G;  % update self-interaction
 
       % store matrix factors
       n = n + 1;
+      F.factors(n).pm = pm;
+      F.factors(n).psk = psk;
+      F.factors(n).prd = prd;
+      F.factors(n).pT = pT;
+      F.factors(n).pL = pL;
       F.factors(n).rsk = rslf(rsk);
       F.factors(n).rrd = rslf(rrd);
       F.factors(n).csk = cslf(csk);
       F.factors(n).crd = cslf(crd);
-      F.factors(n).rT = rT';
-      F.factors(n).cT = cT ;
+      F.factors(n).rT = rT;
+      F.factors(n).cT = cT;
       F.factors(n).L = L;
       F.factors(n).U = U;
       F.factors(n).p = p;
@@ -255,21 +272,36 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
 
     % print summary
     if opts.verb
-      nrrem2  = sum(rrem ); ncrem2  = sum(crem );  % remaining row/cols at end
-      nrcrem2 = sum(rcrem); nccrem2 = sum(ccrem);  % remaining candidates at end
+      nrrem2 = nnz(rrem); ncrem2 = nnz(crem);
       nblk = pblk(lvl) + t.lvp(lvl+1) - t.lvp(lvl);  % nonempty up to this level
       fprintf('%3d | %6d | %8d | %8d | %8.2f | %8.2f | %10.2e\n', ...
               lvl,nblk,nrrem1,nrrem2,nrrem1/nblk,nrrem2/nblk,te)
-      fprintf('%3s | %6s | %8d | %8d | %8.2f | %8.2f | %10s\n', ...
-              ' ',' ',nrcrem1,nrcrem2,nrcrem1/nblk,nrcrem2/nblk,'')
       fprintf('%3s | %6d | %8d | %8d | %8.2f | %8.2f | %10s\n', ...
               ' ',nblk,ncrem1,ncrem2,ncrem1/nblk,ncrem2/nblk,'')
-      fprintf('%3s | %6s | %8d | %8d | %8.2f | %8.2f | %10s\n', ...
-              ' ',' ',nccrem1,nccrem2,nccrem1/nblk,nccrem2/nblk,'')
     end
   end
 
   % finish
   F.factors = F.factors(1:n);
   if opts.verb, fprintf([repmat('-',1,69) '\n']), end
+end
+
+% wrapper for proxy interaction matrix generation
+function [K,nbr] = genpxy(rc,pxyfun,slf,nbr,rem,rx,cx,lvl,l,ctr)
+  nslf = length(slf);
+  if rc ==  'r'
+    K = zeros(nslf,0);
+    if lvl > 2
+      if isempty(pxyfun), nbr = setdiff(rem,slf);  % no proxy needed
+      else, [K,nbr] = pxyfun('r',rx,cx,slf,nbr,l,ctr);
+      end
+    end
+  else
+    K = zeros(0,nslf);
+    if lvl > 2
+      if isempty(pxyfun), nbr = setdiff(rem,slf);  % no proxy needed
+      else, [K,nbr] = pxyfun('c',rx,cx,slf,nbr,l,ctr);
+      end
+    end
+  end
 end
