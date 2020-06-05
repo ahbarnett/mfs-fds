@@ -31,7 +31,7 @@
 function [sk,rd,T] = rdpivot(A,sk,rd,T,mode)
   [m,n] = size(A);
   if m <= n || m ~= length(rd)
-    warning('FLAM:rdpivot:badRdDim','Unexpected redundant submatrix size.');
+    warning('mfs-fds:rdpivot:badRdDim','Unexpected redundant submatrix size.');
     return  % warn and exit if short-and-fat or dimensions don't match
   end
   if n == 0  % special case (Octave LU misbehaves)

@@ -38,20 +38,33 @@ function Y = rskelfm_mv(F,X,trans)
       sk = F.factors(i).csk;
       rd = F.factors(i).crd;
       X(sk,:) = X(sk,:) + F.factors(i).cT*X(rd,:);
-      X(rd,:) = F.factors(i).U*X(rd,:);
-      X(rd,:) = X(rd,:) + F.factors(i).F*X(sk,:);
+      if i < n
+        X(rd,:) = F.factors(i).U*X(rd,:);
+        X(rd,:) = X(rd,:) + F.factors(i).F*X(sk,:);
+      end
     end
 
     % transfer from column to row space
     Y = zeros(F.M,size(X,2));
-    Y([F.factors.rrd],:) = X([F.factors.crd],:);
+    Y([F.factors(1:n-1).rrd],:) = X([F.factors(1:n-1).crd],:);
+
+    % special handling for root node
+    rrd = F.factors(n).rrd;
+    crd = F.factors(n).crd;
+    if length(rrd) == length(crd)
+      Y(rrd(F.factors(n).p),:) = F.factors(n).L*(F.factors(n).U*X(crd,:));
+    else
+      Y(rrd,:) = F.factors(n).L*(F.factors(n).U*X(crd,:));
+    end
 
     % downward sweep in row space
     for i = n:-1:1
       sk = F.factors(i).rsk;
       rd = F.factors(i).rrd;
-      Y(sk,:) = Y(sk,:) + F.factors(i).E*Y(rd,:);
-      Y(rd(F.factors(i).p),:) = F.factors(i).L*Y(rd,:);
+      if i < n
+        Y(sk,:) = Y(sk,:) + F.factors(i).E*Y(rd,:);
+        Y(rd(F.factors(i).p),:) = F.factors(i).L*Y(rd,:);
+      end
       Y(rd,:) = Y(rd,:) + F.factors(i).rT'*Y(sk,:);
       if F.factors(i).pm == 'r'
         psk = F.factors(i).psk;
@@ -73,20 +86,33 @@ function Y = rskelfm_mv(F,X,trans)
       sk = F.factors(i).rsk;
       rd = F.factors(i).rrd;
       X(sk,:) = X(sk,:) + F.factors(i).rT*X(rd,:);
-      X(rd,:) = F.factors(i).L'*X(rd(F.factors(i).p),:);
-      X(rd,:) = X(rd,:) + F.factors(i).E'*X(sk,:);
+      if i < n
+        X(rd,:) = F.factors(i).L'*X(rd(F.factors(i).p),:);
+        X(rd,:) = X(rd,:) + F.factors(i).E'*X(sk,:);
+      end
     end
 
     % transfer from row to column space
     Y = zeros(F.N,size(X,2));
-    Y([F.factors.crd],:) = X([F.factors.rrd],:);
+    Y([F.factors(1:n-1).crd],:) = X([F.factors(1:n-1).rrd],:);
+
+    % special handling for root node
+    rrd = F.factors(n).rrd;
+    crd = F.factors(n).crd;
+    if length(rrd) == length(crd)
+      Y(crd,:) = F.factors(n).U'*(F.factors(n).L'*X(rrd(F.factors(n).p),:));
+    else
+      Y(crd,:) = F.factors(n).U'*(F.factors(n).L'*X(rrd,:));
+    end
 
     % downward sweep in column space
     for i = n:-1:1
       sk = F.factors(i).csk;
       rd = F.factors(i).crd;
-      Y(sk,:) = Y(sk,:) + F.factors(i).F'*Y(rd,:);
-      Y(rd,:) = F.factors(i).U'*Y(rd,:);
+      if i < n
+        Y(sk,:) = Y(sk,:) + F.factors(i).F'*Y(rd,:);
+        Y(rd,:) = F.factors(i).U'*Y(rd,:);
+      end
       Y(rd,:) = Y(rd,:) + F.factors(i).cT'*Y(sk,:);
       if F.factors(i).pm == 'c'
         psk = F.factors(i).psk;
