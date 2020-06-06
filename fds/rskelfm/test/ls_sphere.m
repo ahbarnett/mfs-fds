@@ -3,20 +3,36 @@
 % This is essentially the 3D version of LS_CIRCLE, where the solution is now
 % matched on the surface of the unit sphere and the MFS sources are placed at a
 % slight offset from it.
+%
+%   - M: number of row points (default: M = 16384)
+%   - N: number of column points (default: N = 8192)
+%   - DELTA: MFS offset (default: DELTA = 1e-3)
+%   - OCC: tree occupancy parameter (default: OCC = 1024)
+%   - P: number of proxy points (default: P = 512)
+%   - RANK_OR_TOL: local precision parameter (default: RANK_OR_TOL = 1e-6)
+%   - TMAX: ID interpolation matrix entry bound (default: TMAX = 2)
+%   - RRATIO: rank ratio for rectangular preprocessing (default: RRATIO = 2)
+%   - RDPIV: redundant pivoting method (default: RDPIV = 'L')
+%   - FASTSV: fast solve mode (default: FASTSV = 'N')
+%   - STORE: FMM storage mode (default: STORE = 'A')
+%   - DOITER: whether to run naive LSQR/CG (default: DOITER = 1)
 
-function ls_sphere(M,N,delta,occ,p,rank_or_tol,rdpiv,fastsv,store,doiter)
+function ls_sphere(M,N,delta,occ,p,rank_or_tol,Tmax,rratio,rdpiv,fastsv, ...
+                   store,doiter)
 
   % set default parameters
-  if nargin <  1 || isempty(M), M = 16384; end  % number of row points
-  if nargin <  2 || isempty(N), N =  8192; end  % number of col points
-  if nargin <  3 || isempty(delta), delta = 1e-3; end  % MFS offset
+  if nargin <  1 || isempty(M), M = 16384; end
+  if nargin <  2 || isempty(N), N =  8192; end
+  if nargin <  3 || isempty(delta), delta = 1e-3; end
   if nargin <  4 || isempty(occ), occ = 1024; end
-  if nargin <  5 || isempty(p), p = 512; end  % number of proxy points
+  if nargin <  5 || isempty(p), p = 512; end
   if nargin <  6 || isempty(rank_or_tol), rank_or_tol = 1e-6; end
-  if nargin <  7 || isempty(rdpiv), rdpiv = 'l'; end  % redundant pivoting
-  if nargin <  8 || isempty(fastsv), fastsv = 'n'; end  % fast solve mode
-  if nargin <  9 || isempty(store), store = 'a'; end  % FMM storage mode
-  if nargin < 10 || isempty(doiter), doiter = 1; end  % naive LSQR/CG?
+  if nargin <  7 || isempty(Tmax), Tmax = 2; end
+  if nargin <  8 || isempty(rratio), rratio = 2; end
+  if nargin <  9 || isempty(rdpiv), rdpiv = 'l'; end
+  if nargin < 10 || isempty(fastsv), fastsv = 'n'; end
+  if nargin < 11 || isempty(store), store = 'a'; end
+  if nargin < 12 || isempty(doiter), doiter = 1; end
 
   % initialize
   rx = trisphere_subdiv(M,'v'); cx = trisphere_subdiv(N,'v');
@@ -29,15 +45,16 @@ function ls_sphere(M,N,delta,occ,p,rank_or_tol,rdpiv,fastsv,store,doiter)
   % factor matrix using RSKELFM
   Afun = @(i,j)Afun_(i,j,rx,cx);
   pxyfun = @(rc,rx,cx,slf,nbr,l,ctr)pxyfun_(rc,rx,cx,slf,nbr,l,ctr,proxy);
-  opts = struct('rdpiv',rdpiv,'fastsv',fastsv,'verb',1);
+  opts = struct('Tmax',Tmax,'rratio',rratio,'rdpiv',rdpiv,'fastsv',fastsv, ...
+                'verb',1);
   tic; F = rskelfm(Afun,rx,cx,occ,rank_or_tol,pxyfun,opts); t = toc;
   w = whos('F'); mem = w.bytes/1e6;
   fprintf('rskelfm time/mem: %10.4e (s) / %6.2f (MB)\n',t,mem)
 
   % compress matrix using IFMM
   rank_or_tol = max(rank_or_tol*1e-2,1e-15);  % higher accuracy for reference
-  opts = struct('store',store);
-  tic; G = ifmm(Afun,rx,cx,2*occ,rank_or_tol,pxyfun,opts); t = toc;
+  opts = struct('Tmax',Tmax,'store',store);
+  tic; G = ifmm(Afun,rx,cx,occ,rank_or_tol,pxyfun,opts); t = toc;
   w = whos('G'); mem = w.bytes/1e6;
   fprintf('ifmm time/mem: %10.4e (s) / %6.2f (MB)\n',t,mem)
 
