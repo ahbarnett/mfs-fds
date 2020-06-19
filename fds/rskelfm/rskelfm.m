@@ -4,10 +4,9 @@
 %    consistent linear least squares with moderate solution norm. Specifically,
 %    we make two important modifications during the processing of each block:
 %
-%      - If a block is too rectangular -- namely, to the point that the entire
-%        block row or column, including the diagonal, is low-rank, given the
-%        assumed structure -- then it is explicitly rank-reduced first as a
-%        preprocessing step.
+%      - If an entire block row/column, including the diagonal, is detected as
+%        low-rank, then it is explicitly rank-reduced first as a preprocessing
+%        step.
 %
 %      - Row/column skeletons are then computed as usual but augmented (i.e.,
 %        redundant indices are subselected) as necessary to form a square
@@ -69,13 +68,15 @@
 %      - RRQR_ITER: maximum number of RRQR refinement iterations in ID (default:
 %                   RRQR_ITER = INF). See ID.
 %
-%      - RRATIO: rank ratio for rectangular preprocessing. A given block is row-
+%      - RRATIO: aspect ratio for rank preprocessing. A given block is row-
 %                compressed in its entirety if NRSLF > RRATIO*(NCSLF + NRSK),
 %                where NRSLF and NCSLF are the number of row and column points,
 %                respectively, in the block, and NRSK is the number of row
 %                skeletons from compression of the corresponding off-diagonal
-%                block row (default: RRATIO = 2). An analogous criterion holds
-%                for column compression.
+%                block row. An analogous criterion holds for column compression.
+%                The default RRATIO = 0 corresponds to preprocessing all blocks
+%                and is suitable for rank-deficient problems; otherwise,
+%                RRATIO = 1 may be more appropriate.
 %
 %      - RDPIV: pivoting strategy for redundant point subselection. LU pivoting
 %               is used if RDPIV = 'L', QR pivoting if RDPIV = 'Q', and random
@@ -102,13 +103,16 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
   if ~isfield(opts,'ext'), opts.ext = []; end
   if ~isfield(opts,'Tmax'), opts.Tmax = 2; end
   if ~isfield(opts,'rrqr_iter'), opts.rrqr_iter = Inf; end
-  if ~isfield(opts,'rratio'), opts.rratio = 2; end
+  if ~isfield(opts,'rratio'), opts.rratio = 0; end
   if ~isfield(opts,'rdpiv'), opts.rdpiv = 'l'; end
   if ~isfield(opts,'fastsv'), opts.fastsv = 'n'; end
   if ~isfield(opts,'verb'), opts.verb = 0; end
 
   % check inputs
+  assert(opts.rratio >= 0, 'mfs-fds:rskelfm:invalidRratio', ...
+         'Rank preprocessing ratio must be nonnegative.')
   opts.rdpiv = chkrdpiv(opts.rdpiv);
+  opts.fastsv = chkfastsv(opts.fastsv);
 
   % print header
   if opts.verb
@@ -146,8 +150,9 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
   % initialize
   nbox = t.lvp(end);
   e = cell(nbox,1);
-  F = struct('pm',zeros(nbox,1),'psk',e,'prd',e,'pT',e,'pL',e,'rsk',e,'rrd', ...
-             e,'csk',e,'crd',e,'rT',e,'cT',e,'L',e,'U',e,'p',e,'E',e,'F',e);
+  F = struct('rsk',e,'rrd',e,'rT',e,'csk',e,'crd',e,'cT',e, ...
+             'psk',e,'prd',e,'pT',e,'pL',e,'qsk',e,'qrd',e,'qT',e,'qL',e, ...
+             'L',e,'U',e,'p',e,'E',e,'F',e);
   F = struct('M',M,'N',N,'nlvl',t.nlvl,'lvp',zeros(1,t.nlvl+1),'factors',F);
   nlvl = 0;
   n = 0;
@@ -211,14 +216,12 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
       cK = [full(A(rnbr,cslf)); Kpxy];
       [csk,crd,cT] = id(cK,rank_or_tol,opts.Tmax,opts.rrqr_iter);
 
-      % compress entire block row/column if too rectangular
-      pm = 'n'; psk = []; prd = []; pT = []; pL = [];
-      nrskmax = ncslf + length(rsk);       % maximum block row rank
-      ncskmax = nrslf + length(csk);       % maximum block col rank
-      if nrslf > opts.rratio*nrskmax       % compress block row
-        pm = 'r';
+      % compress entire block row
+      psk = []; prd = []; pT = []; pL = [];
+      nskmax = ncslf + length(rsk);  % maximum rank
+      if nrslf > opts.rratio*nskmax
         rK = [S{i} rK];
-        ptol = nrskmax + tol;              % up to tolerance or maximum rank
+        ptol = nskmax + tol;         % up to tolerance or maximum rank
         [psk,prd,pT] = id(rK',ptol,opts.Tmax,opts.rrqr_iter,rsk);
         if opts.fastsv ~= 'r' && opts.fastsv ~= 'b'
           pL = chol(eye(length(psk)) + pT*pT','lower');
@@ -226,17 +229,21 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
         idx = ismember(rrd,psk); rrd = rrd(idx); rT = rT(:,idx);
         psk = rslf(psk); prd = rslf(prd);
         rrem(prd) = false;
-      elseif ncslf > opts.rratio*ncskmax   % compress block column
-        pm = 'c';
+      end
+
+      % compress entire block column
+      qsk = []; qrd = []; qT = []; qL = [];
+      nskmax = nrslf + length(csk);  % maximum rank
+      if ncslf > opts.rratio*nskmax
         cK = [S{i}; cK];
-        ptol = ncskmax + tol;              % up to tolerance or maximum rank
-        [psk,prd,pT] = id(cK,ptol,opts.Tmax,opts.rrqr_iter,csk);
+        qtol = nskmax + tol;         % up to tolerance or maximum rank
+        [qsk,qrd,qT] = id(cK,qtol,opts.Tmax,opts.rrqr_iter,csk);
         if opts.fastsv ~= 'c' && opts.fastsv ~= 'b'
-          pL = chol(eye(length(psk)) + pT*pT','lower');
+          qL = chol(eye(length(qsk)) + qT*qT','lower');
         end
-        idx = ismember(crd,psk); crd = crd(idx); cT = cT(:,idx);
-        psk = cslf(psk); prd = cslf(prd);
-        crem(prd) = false;
+        idx = ismember(crd,qsk); crd = crd(idx); cT = cT(:,idx);
+        qsk = cslf(qsk); qrd = cslf(qrd);
+        crem(qrd) = false;
       end
 
       % find good redundant pivots
@@ -254,7 +261,9 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
       end
 
       % move on if no compression
-      if isempty(prd) && isempty(rrd) && isempty(crd), continue; end
+      if isempty(rrd) && isempty(crd) && isempty(prd) && isempty(qrd)
+        continue
+      end
 
       % compute factors
       rrs = [rrd rsk];
@@ -277,17 +286,20 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
 
       % store matrix factors
       n = n + 1;
-      F.factors(n).pm = pm;
+      F.factors(n).rsk = rslf(rsk);
+      F.factors(n).rrd = rslf(rrd);
+      F.factors(n).rT = rT;
+      F.factors(n).csk = cslf(csk);
+      F.factors(n).crd = cslf(crd);
+      F.factors(n).cT = cT;
       F.factors(n).psk = psk;
       F.factors(n).prd = prd;
       F.factors(n).pT = pT;
       F.factors(n).pL = pL;
-      F.factors(n).rsk = rslf(rsk);
-      F.factors(n).rrd = rslf(rrd);
-      F.factors(n).csk = cslf(csk);
-      F.factors(n).crd = cslf(crd);
-      F.factors(n).rT = rT;
-      F.factors(n).cT = cT;
+      F.factors(n).qsk = qsk;
+      F.factors(n).qrd = qrd;
+      F.factors(n).qT = qT;
+      F.factors(n).qL = qL;
       F.factors(n).L = L;
       F.factors(n).U = U;
       F.factors(n).p = p;

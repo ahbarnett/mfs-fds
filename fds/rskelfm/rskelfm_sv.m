@@ -34,7 +34,7 @@ function Y = rskelfm_sv(F,X,trans)
 
     % upward sweep in row space
     for i = 1:n
-      if F.factors(i).pm == 'r' && ~isempty(F.factors(i).pL)
+      if ~isempty(F.factors(i).pL)
         psk = F.factors(i).psk;
         prd = F.factors(i).prd;
         tmp = X(psk,:) + F.factors(i).pT*X(prd,:);
@@ -73,11 +73,11 @@ function Y = rskelfm_sv(F,X,trans)
         Y(rd,:) = F.factors(i).U\Y(rd,:);
       end
       Y(sk,:) = Y(sk,:) - F.factors(i).cT*Y(rd,:);
-      if F.factors(i).pm == 'c' && ~isempty(F.factors(i).pL)
-        psk = F.factors(i).psk;
-        prd = F.factors(i).prd;
-        Y(psk,:) = F.factors(i).pL'\(F.factors(i).pL\Y(psk,:));
-        Y(prd,:) = F.factors(i).pT'*Y(psk,:);
+      if ~isempty(F.factors(i).qL)
+        qsk = F.factors(i).qsk;
+        qrd = F.factors(i).qrd;
+        Y(qsk,:) = F.factors(i).qL'\(F.factors(i).qL\Y(qsk,:));
+        Y(qrd,:) = F.factors(i).qT'*Y(qsk,:);
       end
     end
 
@@ -86,11 +86,11 @@ function Y = rskelfm_sv(F,X,trans)
 
     % upward sweep in column space
     for i = 1:n
-      if F.factors(i).pm == 'c' && ~isempty(F.factors(i).pL)
-        psk = F.factors(i).psk;
-        prd = F.factors(i).prd;
-        tmp = X(psk,:) + F.factors(i).pT*X(prd,:);
-        X(psk,:) = F.factors(i).pL'\(F.factors(i).pL\tmp);
+      if ~isempty(F.factors(i).qL)
+        qsk = F.factors(i).qsk;
+        qrd = F.factors(i).qrd;
+        tmp = X(qsk,:) + F.factors(i).qT*X(qrd,:);
+        X(qsk,:) = F.factors(i).qL'\(F.factors(i).qL\tmp);
       end
       sk = F.factors(i).csk;
       rd = F.factors(i).crd;
@@ -125,7 +125,7 @@ function Y = rskelfm_sv(F,X,trans)
         Y(rd(F.factors(i).p),:) = F.factors(i).L'\Y(rd,:);
       end
       Y(sk,:) = Y(sk,:) - F.factors(i).rT*Y(rd,:);
-      if F.factors(i).pm == 'r' && ~isempty(F.factors(i).pL)
+      if ~isempty(F.factors(i).pL)
         psk = F.factors(i).psk;
         prd = F.factors(i).prd;
         Y(psk,:) = F.factors(i).pL'\(F.factors(i).pL\Y(psk,:));

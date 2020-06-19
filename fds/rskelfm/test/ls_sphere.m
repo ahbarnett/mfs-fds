@@ -11,7 +11,7 @@
 %   - P: number of proxy points (default: P = 512)
 %   - RANK_OR_TOL: local precision parameter (default: RANK_OR_TOL = 1e-6)
 %   - TMAX: ID interpolation matrix entry bound (default: TMAX = 2)
-%   - RRATIO: rank ratio for rectangular preprocessing (default: RRATIO = 2)
+%   - RRATIO: rank ratio for rectangular preprocessing (default: RRATIO = 0)
 %   - RDPIV: redundant pivoting method (default: RDPIV = 'L')
 %   - FASTSV: fast solve mode (default: FASTSV = 'N')
 %   - STORE: FMM storage mode (default: STORE = 'A')
@@ -28,7 +28,7 @@ function ls_sphere(M,N,delta,occ,p,rank_or_tol,Tmax,rratio,rdpiv,fastsv, ...
   if nargin <  5 || isempty(p), p = 512; end
   if nargin <  6 || isempty(rank_or_tol), rank_or_tol = 1e-6; end
   if nargin <  7 || isempty(Tmax), Tmax = 2; end
-  if nargin <  8 || isempty(rratio), rratio = 2; end
+  if nargin <  8 || isempty(rratio), rratio = 0; end
   if nargin <  9 || isempty(rdpiv), rdpiv = 'l'; end
   if nargin < 10 || isempty(fastsv), fastsv = 'n'; end
   if nargin < 11 || isempty(store), store = 'a'; end
