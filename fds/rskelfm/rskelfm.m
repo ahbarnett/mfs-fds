@@ -248,9 +248,9 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
 
       % find good redundant pivots
       K = S{i};
-      nrrd = length(rrd);
-      ncrd = length(crd);
       if lvl > 1
+        nrrd = length(rrd);
+        ncrd = length(crd);
         if nrrd > ncrd
           [rsk,rrd,rT] = rdpivot(K(rrd,crd) ,rsk,rrd,rT,opts.rdpiv);
           nrrd = length(rrd);
@@ -270,15 +270,17 @@ function F = rskelfm(A,rx,cx,occ,rank_or_tol,pxyfun,opts)
       crs = [crd csk];
       K(rrd,crs) = K(rrd,crs) - rT'*K(rsk,crs);
       K(rrs,crd) = K(rrs,crd) - K(rrs,csk)*cT;
-      if nrrd == ncrd  % for all non-root
+      if lvl > 1
         [L,U,p] = lu(K(rrd,crd),'vector');
         E = K(rsk,crd)/U;
         G = L\K(rrd(p),csk);
         S{i} = S{i}(rsk,csk) - E*G;  % update self-interaction
-      else             % can only happen at root
-        if nrrd > ncrd, [L,U] = qr(K(rrd,crd) ,0);
-        else,           [Q,R] = qr(K(rrd,crd)',0); L = R'; U = Q';
-       end
+      else
+        nrrd = length(rrd);
+        ncrd = length(crd);
+        if nrrd >= ncrd, [L,U] = qr(K(rrd,crd) ,0);
+        else,            [Q,R] = qr(K(rrd,crd)',0); L = R'; U = Q';
+        end
         p = [];
         E = zeros(0,nrrd);
         G = zeros(ncrd,0);

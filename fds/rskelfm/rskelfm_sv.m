@@ -52,15 +52,13 @@ function Y = rskelfm_sv(F,X,trans)
     % transfer from row to column space
     Y = zeros(F.N,size(X,2));
     Y([F.factors(1:n-1).crd],:) = X([F.factors(1:n-1).rrd],:);
+
+    % special handling for root node
     rrd = F.factors(n).rrd;
     crd = F.factors(n).crd;
-    nrrd = length(rrd);
-    ncrd = length(crd);
-    if nrrd == ncrd     % LU
-      Y(crd,:) = F.factors(n).U\(F.factors(n).L\X(rrd(F.factors(n).p)));
-    elseif nrrd > ncrd  % QR
+    if length(rrd) >= length(crd)  % QR
       Y(crd,:) = F.factors(n).U \(F.factors(n).L'*X(rrd,:));
-    else                % LQ
+    else                           % LQ
       Y(crd,:) = F.factors(n).U'*(F.factors(n).L \X(rrd,:));
     end
 
@@ -104,15 +102,13 @@ function Y = rskelfm_sv(F,X,trans)
     % transfer from column to row space
     Y = zeros(F.M,size(X,2));
     Y([F.factors(1:n-1).rrd],:) = X([F.factors(1:n-1).crd],:);
+
+    % special handling for root node
     rrd = F.factors(n).rrd;
     crd = F.factors(n).crd;
-    nrrd = length(rrd);
-    ncrd = length(crd);
-    if nrrd == ncrd     % LU
-      Y(rrd(F.factors(n).p),:) = F.factors(n).L'\(F.factors(n).U'\X(crd,:));
-    elseif nrrd > ncrd  % QR
+    if length(rrd) >= length(crd)  % QR
       Y(rrd,:) = F.factors(i).L *(F.factors(i).U'\X(crd,:));
-    else                % LQ
+    else                           % LQ
       Y(rrd,:) = F.factors(i).L'\(F.factors(i).U *X(crd,:));
     end
 

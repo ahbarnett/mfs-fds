@@ -51,11 +51,7 @@ function Y = rskelfm_mv(F,X,trans)
     % special handling for root node
     rrd = F.factors(n).rrd;
     crd = F.factors(n).crd;
-    if length(rrd) == length(crd)
-      Y(rrd(F.factors(n).p),:) = F.factors(n).L*(F.factors(n).U*X(crd,:));
-    else
-      Y(rrd,:) = F.factors(n).L*(F.factors(n).U*X(crd,:));
-    end
+    Y(rrd,:) = F.factors(n).L*(F.factors(n).U*X(crd,:));
 
     % downward sweep in row space
     for i = n:-1:1
@@ -99,11 +95,7 @@ function Y = rskelfm_mv(F,X,trans)
     % special handling for root node
     rrd = F.factors(n).rrd;
     crd = F.factors(n).crd;
-    if length(rrd) == length(crd)
-      Y(crd,:) = F.factors(n).U'*(F.factors(n).L'*X(rrd(F.factors(n).p),:));
-    else
-      Y(crd,:) = F.factors(n).U'*(F.factors(n).L'*X(rrd,:));
-    end
+    Y(crd,:) = F.factors(n).U'*(F.factors(n).L'*X(rrd,:));
 
     % downward sweep in column space
     for i = n:-1:1
