@@ -89,8 +89,9 @@ if dim==2
   theta = (1:p)*2*pi/p;
   pts = 1.5*[cos(theta); sin(theta)];  % leave 1.5 as default for 2D
 else         % 3D
-  [xs, ys, zs] = spheresourcequad(flampar.p, flampar.rp); 
-  pts = [xs'; ys'; zs']; 
+  s = ellipsoid(flampar.rp, flampar.rp, flampar.rp);
+  s = setupspherequad(s,[flampar.p, flampar.p/2]); 
+  pts = s.x; 
   
 end
 

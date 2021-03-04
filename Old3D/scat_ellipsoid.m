@@ -19,13 +19,14 @@ for s = dirs, addpath(sprintf('%s/%s/%s',curpath,folder, s{:})); end, clear s
 
 % setup for Ho: (from ie_circle)
 rank_or_tol = 1e-10;
-p = 512;
-proxy = randn(3,p);
-proxy = 1.5*bsxfun(@rdivide,proxy,sqrt(sum(proxy.^2)));
+p = 32; 
+s = ellipsoid(1.5, 1.5, 1.5);
+s = setupspherequad(s,[p, p/2]); 
+proxy = s.x; 
 
 opts = [];
 opts.verb = 1;
-occ=2048; % ??
+occ = 128; % ??
 
 tau = eps^(-1/3);  % params for LSQ
 v = 0; % verbosity
@@ -39,21 +40,23 @@ for jj = 1: length(ds)
     % ====================== END ==============================================
     
     % ====================== Object Parameter setup ===========================
-    N = (100)^2; %400;     % # source points
+    N = 1e4; %400;     % # source points
     fprintf(fid, 'the parameters are tol = %e, p = %d, occ = %d, N = %d \n', rank_or_tol, p, occ, N);
-    
-    M = (1.2)^2 * N;      % # boundary points
+    P = 100; 
+    N0 = N/P;  
+    M = 1.2 * N;      % # boundary points
+    M0 = M/P;
     k = 3;               % gives the wavenumber of the problem;
     theta = -pi/4;   phi = pi/3;
     kx = k * cos(theta) * cos(phi);  ky = k * cos(theta) * sin(phi);  kz = k * sin(theta);
     
     % ==================== This is just a way to setup sphere as the boundary =
-    Rx = 0.5;
-    Ry = 0.5;
+    Rx = 0.6;
+    Ry = 0.6;
     Rz = 1.0;
     
-    t = getShapeEllip(Rx, Ry, Rz, sqrt(M), sqrt(M));
-    s = getSourceEllip(Rx, Ry, Rz, d, sqrt(N), sqrt(N));
+    t = getShapeEllip(Rx, Ry, Rz, M0, P);
+    s = getSourceEllip(Rx, Ry, Rz, d, N0, P);
     f = QuasiPerVecFilling3D(t, kx, ky, kz);
     
     rx = [t.x'; t.y'; t.z'];    % a sphere with radius 1 as boundary

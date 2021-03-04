@@ -19,13 +19,14 @@ for s = dirs, addpath(sprintf('%s/%s/%s',curpath,folder, s{:})); end, clear s
 
 % setup for Ho: (from ie_circle)
 rank_or_tol = 1e-10;
-p = 512;
-proxy = randn(3,p);
-proxy = 1.5*bsxfun(@rdivide,proxy,sqrt(sum(proxy.^2)));
+p = 32; 
+s = ellipsoid(1.5, 1.5, 1.5);
+s = setupspherequad(s,[p, p/2]); 
+proxy = s.x; 
 
 opts = [];
 opts.verb = 1;
-occ=2048; % ??
+occ = 128; % ??
 
 tau = eps^(-1/3);  % params for LSQ
 v = 0; % verbosity

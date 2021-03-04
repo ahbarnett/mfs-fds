@@ -1,5 +1,12 @@
-params: N = 40000, P = 200, a = 0.3, k = 3, d = 0.1, proxy R = 1.5.
-bdry rms err: 8.48e-10 
-the whold program takes 1.24e+03 seconds.
+params: N = 10000, P = 100, a = 0.3, k = 3, d = 0.1.
+FLAM params: proxy R = 1.5, tol = 1.000000e-10, p = 32, occ = 128.
+bdry rms err: 6.63e-06 
+the whold program takes 91.9 seconds.
+------------------------------------------------------------ 
+
+params: N = 40000, P = 200, a = 0.3, k = 3, d = 0.1.
+FLAM params: proxy R = 1.5, tol = 1.000000e-10, p = 32, occ = 128.
+bdry rms err: 8.39e-10 
+the whold program takes 690 seconds.
 ------------------------------------------------------------ 
 

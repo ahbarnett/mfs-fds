@@ -33,14 +33,17 @@ rx = [t.x'; t.y'; t.z']; cx = [s.x'; s.y'; s.z'];
 % linear solver choice...
 meth = 'r';  % 'l'=dense LU, 'q'=dense QR (both O(N^3)); 'r'=FLAM rskel
 
-flampar.rank_or_tol = 1e-12;
+flampar.rank_or_tol = 1e-10;
 flampar.rp = 1.5; % radius of the proxy sphere
-flampar.p = 64;  % num proxy pts (should depend on eps)
+flampar.p = 32;  % num proxy pts (should depend on eps)
 flampar.opts = []; flampar.opts.verb = 0;
 flampar.occ= 128;    % max pts per box for quadtree
 
-fprintf('params: N = %d, P = %d, a = %.3g, k = %d, d = %.3g, proxy R = %.3g.\n',N, P, a, k, d, flampar.rp); 
-fprintf(fid, 'params: N = %d, P = %d, a = %.3g, k = %d, d = %.3g, proxy R = %.3g.\n',N, P, a, k, d, flampar.rp); 
+fprintf('params: N = %d, P = %d, a = %.3g, k = %d, d = %.3g.\n',N, P, a, k, d); 
+fprintf(fid, 'params: N = %d, P = %d, a = %.3g, k = %d, d = %.3g.\n',N, P, a, k, d); 
+
+fprintf('FLAM params: proxy R = %.3g, tol = %e, p = %d, occ = %d.\n', flampar.rp, flampar.rank_or_tol, flampar.p, flampar.occ); 
+fprintf(fid, 'FLAM params: proxy R = %.3g, tol = %e, p = %d, occ = %d.\n', flampar.rp, flampar.rank_or_tol, flampar.p, flampar.occ); 
 
 % params for LSQ
 lsqpar.meth = 'u';  % 'u'=underdetermined, 'o'=overdetermined

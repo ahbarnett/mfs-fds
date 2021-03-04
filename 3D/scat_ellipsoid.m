@@ -13,13 +13,15 @@ kx = k * cos(theta) * cos(phi);  ky = k * cos(theta) * sin(phi);  kz = k * sin(t
 
 N = 1e4;         % overkill by factor 20, but good for test evalmeth='f'.
 evalmeth = 'f';   % summation method for pot eval: 'd' direct slow, 'f' FMM
-M = 1.2^2 * N; 
-
+M = 1.2 * N; 
+P = 100; 
+N0 = N/P; 
+M0 = M/P; 
 % MFS: t = surface pt struct, s = source pt struct
 d = 0.1;                   % Note for imagd=0.1 in this BVP, rank(A)<600
-Rx = 0.5; Ry = 0.5; Rz = 1.0; 
-t = getShapeEllip(Rx, Ry, Rz, sqrt(M), sqrt(M));
-s = getSourceEllip(Rx, Ry, Rz, d, sqrt(N), sqrt(N));
+Rx = 0.6; Ry = 0.6; Rz = 1.0; 
+t = getShapeEllip(Rx, Ry, Rz, M0, P);
+s = getSourceEllip(Rx, Ry, Rz, d, N0, P);
 f = QuasiPerVecFilling3D(t, kx, ky, kz);
 
 rx = [t.x'; t.y'; t.z']; cx = [s.x'; s.y'; s.z'];
@@ -27,14 +29,17 @@ rx = [t.x'; t.y'; t.z']; cx = [s.x'; s.y'; s.z'];
 % linear solver choice...
 meth = 'r';  % 'l'=dense LU, 'q'=dense QR (both O(N^3)); 'r'=FLAM rskel
 
-flampar.rank_or_tol = 1e-12;
+flampar.rank_or_tol = 1e-10;
 flampar.rp = 1.5; % radius of proxy sphere 
-flampar.p = 64;   % num proxy pts (should depend on eps)
+flampar.p = 32;   % num proxy pts (should depend on eps)
 flampar.opts = []; flampar.opts.verb = 0;
-flampar.occ= 128;    % max pts per box for quadtree
+flampar.occ = 128;    % max pts per box for quadtree
 
-fprintf('params: N = %d, Rx = %.3g, Ry = %.3g, Rz = %.3g, k = %d, d = %.3g, proxy R = %.3g.\n',N, Rx, Ry, Rz, k, d, flampar.rp); 
-fprintf(fid, 'params: N = %d, Rx = %.3g, Ry = %.3g, Rz = %.3g, k = %d, d = %.3g, proxy R = %.3g.\n',N, Rx, Ry, Rz, k, d, flampar.rp); 
+fprintf('params: N = %d, Rx = %.3g, Ry = %.3g, Rz = %.3g, k = %d, d = %.3g.\n',N, Rx, Ry, Rz, k, d); 
+fprintf(fid, 'params: N = %d, Rx = %.3g, Ry = %.3g, Rz = %.3g, k = %d, d = %.3g.\n',N, Rx, Ry, Rz, k, d); 
+
+fprintf('FLAM params: proxy R = %.3g, tol = %e, p = %d, occ = %d.\n', flampar.rp, flampar.rank_or_tol, flampar.p, flampar.occ); 
+fprintf(fid, 'FLAM params: proxy R = %.3g, tol = %e, p = %d, occ = %d.\n', flampar.rp, flampar.rank_or_tol, flampar.p, flampar.occ); 
 
 % params for LSQ
 lsqpar.meth = 'u';  % 'u'=underdetermined, 'o'=overdetermined

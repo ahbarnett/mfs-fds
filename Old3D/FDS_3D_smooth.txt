@@ -22,3 +22,55 @@ doing the test takes 0.50 seconds.
 it takes 24.90 GB of RAM.
 ------------------------------------------------------------ 
 
+------------------------------------------------------------ 
+the parameters are tol = 1.000000e-10, p = 512, occ = 128, N = 40000 
+k = 3, a = 3.000000e-01, w = 4, d = 0.1000
+setting up the parameter and preparation takes 0.10 seconds. 
+doing rskel takes 98.64 seconds. 
+doing rskel_xsp takes 12.89 seconds. 
+doing QR takes 622.46 seconds. 
+solve the right hand side (0 iteration) takes 10.11 seconds. 
+the error on the boundary is 8.551098e-10 
+doing the test takes 0.50 seconds.
+it takes 25.32 GB of RAM.
+------------------------------------------------------------ 
+
+------------------------------------------------------------ 
+the parameters are tol = 1.000000e-10, p = 512, occ = 128, N = 10000 
+k = 3, a = 3.000000e-01, w = 4, d = 0.1000
+setting up the parameter and preparation takes 0.09 seconds. 
+doing rskel takes 12.25 seconds. 
+doing rskel_xsp takes 2.32 seconds. 
+doing QR takes 82.53 seconds. 
+solve the right hand side (0 iteration) takes 2.49 seconds. 
+the error on the boundary is 6.616726e-06 
+doing the test takes 0.18 seconds.
+it takes 6.08 GB of RAM.
+------------------------------------------------------------ 
+
+------------------------------------------------------------ 
+the parameters are tol = 1.000000e-10, p = 32, occ = 128, N = 10000 
+k = 3, a = 3.000000e-01, w = 4, d = 0.1000
+setting up the parameter and preparation takes 0.09 seconds. 
+doing rskel takes 11.36 seconds. 
+doing rskel_xsp takes 1.99 seconds. 
+doing QR takes 77.72 seconds. 
+solve the right hand side (0 iteration) takes 2.51 seconds. 
+the error on the boundary is 6.616756e-06 
+doing the test takes 0.20 seconds.
+it takes 6.07 GB of RAM.
+------------------------------------------------------------ 
+
+------------------------------------------------------------ 
+the parameters are tol = 1.000000e-10, p = 32, occ = 128, N = 40000 
+k = 3, a = 3.000000e-01, w = 4, d = 0.1000
+setting up the parameter and preparation takes 0.09 seconds. 
+doing rskel takes 99.54 seconds. 
+doing rskel_xsp takes 13.15 seconds. 
+doing QR takes 590.15 seconds. 
+solve the right hand side (0 iteration) takes 14.77 seconds. 
+the error on the boundary is 8.541485e-10 
+doing the test takes 0.64 seconds.
+it takes 25.31 GB of RAM.
+------------------------------------------------------------ 
+
