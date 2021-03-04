@@ -51,6 +51,11 @@ elseif meth=='f'
                    0*x,0*cx,0,0,0,M,trg,1,iffldtarg,0);
     U = (4/1i) * U.pottarg;   % undo the hfmm2d normalization. is a row vec
   else              % 3D
-    % ***
+    ifcharge = 1;
+    ifdipole = 0;   % note dummy inputs for dipoles here...
+    iffldtarg = 0;  % for now
+    U = hfmm3dpart(opts.iprec,k,N,cx,ifcharge,x,ifdipole,...
+                   0*x,0*cx,0,0,M,trg,1,iffldtarg);
+    U = U.pottarg;   % undo the hfmm2d normalization. is a row vec
   end
 end

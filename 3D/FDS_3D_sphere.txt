@@ -1,0 +1,5 @@
+params: N = 10000, P = 100, a = 0, k = 3, d = 0.2, proxy R = 1.5.
+bdry rms err: 2.6e-10 
+the whold program takes 88.6 seconds.
+------------------------------------------------------------ 
+

@@ -1,0 +1,20 @@
+params: N = 40000, Rx = 0.6, Ry = 0.6, Rz = 1, k = 3, d = 0.1, proxy R = 1.5.
+bdry rms err: NaN 
+the whold program takes 1.05e+03 seconds.
+------------------------------------------------------------ 
+
+params: N = 10000, Rx = 0.6, Ry = 0.6, Rz = 1, k = 3, d = 0.1, proxy R = 1.5.
+bdry rms err: 3.19e-09 
+the whold program takes 83.9 seconds.
+------------------------------------------------------------ 
+
+params: N = 10000, Rx = 0.2, Ry = 0.2, Rz = 1, k = 3, d = 0.1, proxy R = 1.5.
+bdry rms err: 6.53e-08 
+the whold program takes 74.1 seconds.
+------------------------------------------------------------ 
+
+params: N = 10000, Rx = 0.5, Ry = 0.5, Rz = 1, k = 3, d = 0.1, proxy R = 1.5.
+bdry rms err: 7e-09 
+the whold program takes 76.7 seconds.
+------------------------------------------------------------ 
+

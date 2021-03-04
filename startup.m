@@ -11,14 +11,15 @@ if 0
   rmpath(genpath(fullfile(h,'.git')))
 end
 
-addpath([h '/../fmmlib2d/matlab']);            % 2D FMM
+addpath([h '/../fmmlib2d/matlab']);                % 2D FMM
+addpath([h '/../fmmlib3d-1.2/matlab']);            % 3D FMM
 
 % following is correct if FLAM placed alongside mfs-fds directory...
 FLAM = [h '/../FLAM'];      % user: adjust to top of your FLAM installation
 run([FLAM '/startup.m']);
 
 % following is correct if SuiteSparse placed alongside mfs-fds directory
-addpath('../SuiteSparse/SPQR/MATLAB')
+% addpath('../SuiteSparse/SPQR/MATLAB')
 
 
 
