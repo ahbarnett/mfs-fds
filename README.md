@@ -10,7 +10,8 @@ authors: Alex Barnett, Ken Ho, and Yuxiang (Larry) Liu.
 
 * MATLAB, any recent version.
 * [FLAM](https://github.com/klho/FLAM)
-* [FMMLIB2D](https://github.com/zgimbutas/fmmlib2d)
+* [FMMLIB2D](https://github.com/zgimbutas/fmmlib2d) v 1.2
+* [FMMLIB3D](https://github.com/zgimbutas/fmmlib3d) v 1.2
 * optionally: [SuiteSparse](http://faculty.cse.tamu.edu/davis/suitesparse.html)
 
 If you place (eg soft-links to)
@@ -40,4 +41,4 @@ produce a 2D wave scattering plot.
 * `2D/run_all_onecorner_conv_demos` : sweeps through 5 {0,1}-corner small shapes as above
 * `2D/scat_panel_polygon` : choice of two large-scale polygon examples  
 
-
+* `3D` : 3D demo codes  

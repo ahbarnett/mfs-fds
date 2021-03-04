@@ -38,7 +38,7 @@ if meth=='l' || meth=='q'  % ---------------- dense meths
 
 else                       % ---------------- FDS
   Afun = @(i,j)Kfun(rx(:,i),cx(:,j),k);
-  pxypts = proxypts(dim,flampar.p,flampar.rp);  % proxy pts vs unit box
+  pxypts = proxypts(dim,flampar);  % proxy pts vs unit box
   pxyfun = @(rc,rx,cx,slf,nbr,l,ctr)proxyfun(rc,rx,cx,slf,nbr,l,ctr,pxypts,k);
   t0=tic; RF = rskel(Afun,rx,cx,flampar.occ,flampar.rank_or_tol,pxyfun,flampar.opts);  % compress
   w = whos('RF'); fprintf('rskel: %.3g s \t %.0f (MB)\n',toc(t0),w.bytes/1e6)
@@ -83,12 +83,13 @@ else
 end
 
 % proxy points for FDS -- circle/sphere around unit box
-function pts = proxypts(dim, p, rp)
+function pts = proxypts(dim, flampar)
 if dim==2
+  p = flampar.p;
   theta = (1:p)*2*pi/p;
   pts = 1.5*[cos(theta); sin(theta)];  % leave 1.5 as default for 2D
 else         % 3D
-  [xs, ys, zs] = spheresourcequad(p, rp); 
+  [xs, ys, zs] = spheresourcequad(flampar.p, flampar.rp); 
   pts = [xs'; ys'; zs']; 
   
 end
