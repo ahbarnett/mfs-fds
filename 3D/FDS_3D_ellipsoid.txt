@@ -15,4 +15,3 @@ FLAM params: proxy R = 1.5, tol = 1.000000e-10, p = 32, occ = 256.
 bdry rms err: 6.53e-08 
 the whold program takes 15.4 seconds.
 ------------------------------------------------------------ 
-
