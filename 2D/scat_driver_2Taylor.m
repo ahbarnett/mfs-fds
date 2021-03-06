@@ -6,7 +6,7 @@
 clear;
 v = 1;        % verbosity: 0 = text only, 1 = total potential plot
 
-k = 30;    % wavenumber (fix all params if want to compare to ue value below)
+k = 30;     % wavenumber (fix all params if want to compare to ue value below)
 
 b = 1; a = .3; w = 5;    % try 25;        % smooth wobbly radial shape params
 R = @(t) b*(1 + a*cos(w*t));
@@ -26,7 +26,7 @@ s.t = (1:N)'/N*2*pi;
 imagd = 0.1;                   % Note for imagd=0.1 in this BVP, rank(A)<600
 s.x = exp(1i*s.t).*R(s.t)  ...  % z(t)
     + 1i*imagd *(1i*exp(1i*s.t).*R(s.t)+exp(1i*s.t).*R_t(s.t)) ... % id z'(t)
-    - imagd^2 *(-exp(1i*s.t).*R(s.t) + 1i * exp(1i*s.t) .* R_t(s.t) ...
+    - imagd^2 *(-exp(1i*s.t).*R(s.t) + 1i * exp(1i*s.t) .* R_t(s.t) ... % -d^2 z''(t)
                 + 1i * exp(1i*s.t).*R_t(s.t) + exp(1i*s.t) .*R_tt(s.t)); 
             
 fprintf('min src ppw = %.3g; bdry ppw = %.3g\n',2*pi/(k*max(abs(diff(s.x)))),2*pi/(k*max(abs(diff(t.x)))))
