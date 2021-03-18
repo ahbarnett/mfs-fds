@@ -38,8 +38,7 @@ if meth=='l' || meth=='q'  % ---------------- dense meths
 
 else                       % ---------------- FDS
   Afun = @(i,j)Kfun(rx(:,i),cx(:,j),k);
-  pxypts = proxypts(dim,flampar);  % proxy pts vs unit box
-  pxyfun = @(rc,rx,cx,slf,nbr,l,ctr)proxyfun(rc,rx,cx,slf,nbr,l,ctr,pxypts,k);
+  pxyfun = @(rc,rx,cx,slf,nbr,l,ctr)proxyfun(rc,rx,cx,slf,nbr,l,ctr,dim,flampar,k);
   t0=tic; RF = rskel(Afun,rx,cx,flampar.occ,flampar.rank_or_tol,pxyfun,flampar.opts);  % compress
   w = whos('RF'); fprintf('rskel: %.3g s \t %.0f (MB)\n',toc(t0),w.bytes/1e6)
 
@@ -95,9 +94,16 @@ else         % 3D
   
 end
 
-function [Kpxy,nbr] = proxyfun(rc,rx,cx,slf,nbr,l,ctr,pxypts,k)
+function [Kpxy,nbr] = proxyfun(rc,rx,cx,slf,nbr,l,ctr,dim, flampar,k)
 % proxy function for FDS: outputs kernel matrix from pts <-> proxies
 % for either row or col points, and outputs subselected nbrs to keep.
+
+flampar.p = max(32, round(l(1)*k)); 
+
+if 0 && flampar.p > 32 
+    fprintf('p = %d\n.', flampar.p); 
+end 
+pxypts = proxypts(dim, flampar); 
 pts = pxypts.*l + ctr;       % scale and center the proxy circle about the box
 if strcmpi(rc,'r')
   Kpxy = Kfun(rx(:,slf),pts,k);
