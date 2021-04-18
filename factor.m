@@ -98,7 +98,7 @@ function [Kpxy,nbr] = proxyfun(rc,rx,cx,slf,nbr,l,ctr,dim, flampar,k)
 % proxy function for FDS: outputs kernel matrix from pts <-> proxies
 % for either row or col points, and outputs subselected nbrs to keep.
 
-flampar.p = max(32, round(l(1)*k)); 
+flampar.p = max(32, 2^(ceil( log( round(l(1)*k))/log(2) )) ); 
 
 if 0 && flampar.p > 32 
     fprintf('p = %d\n.', flampar.p); 

@@ -17,6 +17,7 @@ Ns = 100:100:10000;
 err = zeros(length(Ns), 1); 
 rrms = zeros(length(Ns), 1); 
 ds = zeros(length(Ns), 1); 
+ts = zeros(length(Ns), 1); 
 for i = 1:length(Ns)
     fprintf('i = %d', i); 
     N = Ns(i);
@@ -24,7 +25,7 @@ for i = 1:length(Ns)
     M = round(1.2*N);         % # bdry pts
     t.t = (1:M)'/M*2*pi; t.x = exp(1i*t.t).*R(t.t);  % bdry pts
     s.t = (1:N)'/N*2*pi; s.x = exp(1i*s.t).*R(s.t);  % MFS src pts
-    imagd = min(0.1, min(abs(diff(s.x)))*250);                   % Note for imagd=0.1 in this BVP, rank(A)<600
+    imagd = 0.1;                    % Note for imagd=0.1 in this BVP, rank(A)<600
     ds(i) = imagd; 
     %imagd = 0.1;
     
@@ -53,12 +54,13 @@ for i = 1:length(Ns)
     nrm = norm(co);
     ur = mfseval(k,[real(t.x)';imag(t.x)'],cx,co,evalmeth);  % apply A to co
     rrms(i) = norm(ur(:) - rhs)/sqrt(M);
+    ts(i) = toc; 
     
     m = 137;    % check at this many new shifted-grid bdry pts
     clear b; b.t = (0.5:m-0.5)'/m*2*pi; b.x = exp(1i*b.t).*R(b.t);
     ub = mfseval(k,[real(b.x)';imag(b.x)'],cx,co,evalmeth);
     utotb = ub + ui(b.x).';                 % physical potential on bdry
     err(i) = norm(utotb)/sqrt(m); 
-    toc;
+    
 end
-save('scat_k30.mat', 'err', 'rrms', 'Ns', 'ds');
+save('scat_k30.mat', 'err', 'rrms', 'Ns', 'ds', 'ts');
