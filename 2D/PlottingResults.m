@@ -1,5 +1,6 @@
 load('scat_k300_Nsds.mat'); 
 imagesc(Ns, ds, log10(err')); colorbar; caxis([-10 0]); colorbar; set(gca, 'FontSize', 16); axis xy;
+colormap jet; 
 title('err vs N,d when k = 300'); 
 
 figure; 
